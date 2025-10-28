@@ -1,0 +1,45 @@
+name: Run rainfall analysis and publish outputs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'rainfall_nairobi_chirps.py'
+      - 'requirements.txt'
+      - '.github/workflows/**'
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # allows workflow to push generated data
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run rainfall analysis
+        run: |
+          mkdir -p docs/data
+          python rainfall_nairobi_chirps.py --source data --out-dir docs/data
+
+      - name: Commit generated outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data || true
+          git commit -m "chore: update rainfall analysis outputs [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:main

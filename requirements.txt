@@ -1,0 +1,8 @@
+xarray
+rioxarray
+rasterio
+s3fs
+pandas
+numpy
+matplotlib
+netcdf4
