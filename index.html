@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="description" content="Kavutiri Farm — Interactive NDVI timeline + map (GitHub Pages)" />
+<title>Kavutiri NDVI Timeline</title>
+
+<!-- Leaflet + Chart.js + Luxon -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --bg:#071122;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4;
+    --text:#e6eef8;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071122 0%, #0b1630 100%);color:var(--text)}
+  .wrap{max-width:1200px;margin:18px auto;padding:16px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  h1{margin:0;font-size:20px}
+  .small{font-size:12px;color:var(--muted)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .card{background:var(--card);border-radius:12px;padding:12px;margin-top:12px;box-shadow:0 6px 18px rgba(2,6,23,0.55)}
+  #topRow{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+  canvas{width:100%;height:260px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:10px;padding:8px}
+  #map{height:360px;border-radius:10px;margin-top:6px}
+  .btn{background:var(--accent);border:none;color:#04202a;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  #stats{margin-top:8px;color:#bfeff7;font-size:13px}
+  .loading{padding:12px;text-align:center;color:var(--muted)}
+  .error{color:#ff8a8a;padding:10px;text-align:center}
+  @media (max-width:900px){
+    #topRow{grid-template-columns:1fr}
+    canvas{height:220px}
+    #map{height:280px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Kavutiri NDVI Timeline</h1>
+      <div class="small">Interactive NDVI timeline & map — place `data/kavutiri.json` in the same repo for GitHub Pages</div>
+    </div>
+
+    <div class="controls">
+      <label class="small" for="upload" style="margin-right:6px">Upload JSON</label>
+      <input id="upload" type="file" accept="application/json" />
+      <button id="downloadCsv" class="btn secondary" title="Download CSV">Download CSV</button>
+    </div>
+  </header>
+
+  <div id="loader" class="loading card">Loading NDVI data…</div>
+
+  <div id="dashboard" style="display:none">
+    <div class="card" id="topRow">
+      <div>
+        <canvas id="ndviChart"></canvas>
+        <div id="stats" aria-live="polite">—</div>
+      </div>
+      <div class="card" style="height:100%">
+        <div class="small">Map view</div>
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="error" style="display:none" class="error card"></div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.4.0"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/*
+ Expected JSON (relative: data/kavutiri.json)
+ {
+   "records":[
+     {"date":"2025-01-10","ndvi":0.68,"lat":-0.498,"lon":37.912},
+     ...
+   ]
+ }
+*/
+
+const DEFAULT_JSON = 'data/kavutiri.json';
+let ndviData = [];
+let chart = null;
+let map = null;
+let markers = [];
+
+/* Utility: load JSON from relative path */
+async function loadJson(path) {
+  try {
+    const res = await fetch(path, {cache: "no-store"});
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+}
+
+/* CSV export helper */
+function recordsToCsv(records) {
+  const header = ['date','ndvi','lat','lon'];
+  const rows = records.map(r => [r.date, r.ndvi, r.lat ?? '', r.lon ?? '']);
+  return [header, ...rows].map(r => r.join(',')).join('\n');
+}
+function downloadCsv(filename, content) {
+  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },500);
+}
+
+/* Stats */
+function updateStats(records){
+  if(!records.length) return document.getElementById('stats').textContent = 'No data';
+  const vals = records.map(r=>Number(r.ndvi)).filter(v=>!Number.isNaN(v));
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const avg = (vals.reduce((a,b)=>a+b,0)/vals.length);
+  document.getElementById('stats').textContent =
+    `Count: ${records.length}  •  Min: ${min.toFixed(3)}  •  Max: ${max.toFixed(3)}  •  Avg: ${avg.toFixed(3)}`;
+}
+
+/* Build chart */
+function buildChart(records) {
+  const ctx = document.getElementById('ndviChart').getContext('2d');
+  const labels = records.map(r => r.date);
+  const values = records.map(r => r.ndvi);
+
+  if(chart) {
+    chart.destroy();
+    chart = null;
+  }
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'NDVI',
+        data: values,
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6,182,212,0.18)',
+        fill: true,
+        tension: 0.15,
+        pointRadius: 3,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      interaction: {mode: 'nearest', intersect: false},
+      plugins: {legend:{display:false}},
+      scales: {
+        x: {type: 'time', time: {unit: 'month', tooltipFormat:'yyyy-LL-dd'}},
+        y: {min: -0.5, max: 1}
+      },
+      onHover(evt, active) {
+        if(active && active.length) {
+          const idx = active[0].index;
+          highlightMarker(idx);
+        } else {
+          highlightMarker(-1);
+        }
+      },
+      onClick(evt, active) {
+        if(active && active.length) {
+          const idx = active[0].index;
+          flyToMarker(idx);
+        }
+      },
+      maintainAspectRatio: false,
+    }
+  });
+}
+
+/* Map operations */
+function initMap(center=[-0.5,37.9], zoom=11) {
+  if(map) return;
+  map = L.map('map', {preferCanvas:true}).setView(center, zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:''}).addTo(map);
+}
+function clearMarkers(){
+  markers.forEach(m=>map.removeLayer(m));
+  markers = [];
+}
+function buildMarkers(records){
+  clearMarkers();
+  records.forEach((r, idx) => {
+    if (typeof r.lat !== 'number' || typeof r.lon !== 'number') return;
+    const m = L.circleMarker([r.lat, r.lon], {radius:4, color:'#06b6d4', fillOpacity:0.75});
+    m.addTo(map);
+    m.on('mouseover', ()=> {
+      // programmatically highlight chart point
+      highlightChartPoint(idx);
+    });
+    m.on('click', ()=> {
+      highlightChartPoint(idx);
+      // open popup
+      m.bindPopup(`<b>${r.date}</b><br>NDVI: ${r.ndvi}`).openPopup();
+    });
+    markers.push(m);
+  });
+}
+
+/* Highlight helpers */
+function highlightMarker(index) {
+  markers.forEach((m,i)=>{
+    m.setStyle({color: i===index ? '#ffffff' : '#06b6d4', radius: i===index ? 7 : 4});
+  });
+}
+function highlightChartPoint(index){
+  if(!chart) return;
+  if(index < 0) {
+    chart.setActiveElements([]);
+    chart.tooltip.setActiveElements([], {x:0,y:0});
+    chart.update();
+    return;
+  }
+  const datasetIndex = 0;
+  chart.setActiveElements([{datasetIndex, index}]);
+  // position tooltip near the chart point
+  const el = chart.getDatasetMeta(datasetIndex).data[index];
+  if(el){
+    const rect = chart.canvas.getBoundingClientRect();
+    const x = el.x + rect.left;
+    const y = el.y + rect.top;
+    chart.tooltip.setActiveElements([{datasetIndex, index}], {x: x, y: y});
+    chart.update();
+  }
+  highlightMarker(index);
+}
+function flyToMarker(index){
+  if(markers[index]) map.flyTo(markers[index].getLatLng(), Math.max(map.getZoom(), 14));
+}
+
+/* Load and render dataset */
+async function loadAndRender(path, fromUpload=false) {
+  const loader = document.getElementById('loader');
+  const dashboard = document.getElementById('dashboard');
+  const errorEl = document.getElementById('error');
+  loader.style.display = 'block';
+  dashboard.style.display = 'none';
+  errorEl.style.display = 'none';
+  try {
+    const payload = fromUpload ? path : await loadJson(path);
+    const data = fromUpload ? payload : payload;
+    if(!data || !Array.isArray(data.records)) throw new Error('JSON missing "records" array');
+
+    ndviData = data.records
+      .map(r => ({ date: r.date, ndvi: Number(r.ndvi), lat: typeof r.lat === 'number' ? r.lat : (Number(r.latitude) || null), lon: typeof r.lon === 'number' ? r.lon : (Number(r.longitude) || null) }))
+      .sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+    if(!ndviData.length) throw new Error('No NDVI records found');
+
+    // init UI components
+    initMap();
+    buildChart(ndviData);
+    buildMarkers(ndviData);
+    updateStats(ndviData);
+
+    loader.style.display = 'none';
+    dashboard.style.display = 'block';
+  } catch (err) {
+    loader.style.display = 'none';
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'Error loading NDVI data: ' + err.message;
+    console.error(err);
+  }
+}
+
+/* file upload for local testing */
+document.getElementById('upload').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  if(!f) return;
+  try {
+    const txt = await f.text();
+    const json = JSON.parse(txt);
+    // pass parsed JSON as from-upload payload
+    loadAndRender(json, true);
+  } catch(err) {
+    alert('Invalid JSON file: ' + err.message);
+  }
+});
+
+/* CSV download button */
+document.getElementById('downloadCsv').addEventListener('click', ()=>{
+  if(!ndviData || !ndviData.length){ alert('No NDVI data loaded'); return; }
+  const csv = recordsToCsv(ndviData);
+  downloadCsv('kavutiri-ndvi.csv', csv);
+});
+
+/* Boot: load default path (GitHub Pages relative) */
+loadAndRender(DEFAULT_JSON);
+</script>
+</body>
+</html>
