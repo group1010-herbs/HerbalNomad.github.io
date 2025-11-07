@@ -1,45 +1,31 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NDVI Monitoring Dashboard</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Kavutiri NDVI Interactive Dashboard</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <style>
-    :root{--bg:#0f1724;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui;color:#e6eef8;background:linear-gradient(180deg,#071122 0%, #0b1630 100%);}
-    .container{max-width:1250px;margin:24px auto;padding:18px}
-    header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
-    h1{margin:0;font-size:24px}
-    Select{padding:8px 10px;border-radius:8px;border:none;background:#122035;color:#e8f6fd;font-size:14px}
-    .card{background:var(--card);padding:14px;border-radius:14px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:12px}
-    #map{height:350px;border-radius:10px;margin-top:12px}
-    .small{font-size:12px;color:var(--muted)}
-    #stats{font-size:13px;margin-top:6px;color:#a3d8e6}
-    .loading{text-align:center;margin:16px 0;font-size:13px}
-    footer{text-align:center;margin-top:18px;font-size:12px;color:var(--muted)}
-  </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{--bg:#0f1724;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4}
+html,body{margin:0;font-family:Inter,system-ui;background:var(--bg);color:#e6eef8}
+.container{padding:14px}
+.card{background:var(--card);padding:14px;border-radius:12px;margin-bottom:14px}
+canvas{background:rgba(255,255,255,0.03);border-radius:10px}
+#map{height:310px;border-radius:10px;margin-top:10px}
+.stats{font-size:13px;color:#a3d8e6;margin-top:6px}
+.loading{text-align:center;padding:10px;color:var(--muted)}
+.error{color:#ff7b7b;text-align:center;font-size:14px;margin-top:20px}
+</style>
 </head>
+
 <body>
 <div class="container">
 
-  <header>
-    <div>
-      <h1>NDVI Monitoring Dashboard</h1>
-      <div class="small">Interactive • Auto-loaded from JSON • Ready for GitHub Pages</div>
-    </div>
-
-    <select id="siteSelect">
-      <option value="kavutiri">Kavutiri</option>
-      <option value="nyeri">Nyeri</option>
-      <option value="kirinyaga">Kirinyaga</option>
-    </select>
-  </header>
-
   <div class="card">
     <canvas id="ndviChart" height="230"></canvas>
-    <div id="stats"></div>
+    <div class="stats" id="stats">Statistics: —</div>
   </div>
 
   <div class="card">
@@ -48,7 +34,6 @@
 
   <div id="loader" class="loading">Loading NDVI data...</div>
 
-  <footer>© 2025 Rustic Garden — GitHub Pages — Chart.js + Leaflet</footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -57,111 +42,83 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-let chart, map, markers = [];
+let chart,map,markers=[];
 
-async function loadData(site) {
-  try {
-    const response = await fetch(`data/${site}.json`);
-    return await response.json();
-  } catch {
+async function loadNDVI(){
+  try{
+    const res=await fetch("data/kavutiri.json");
+    return await res.json();
+  }catch(e){
     return null;
   }
 }
 
-function updateStats(records) {
-  const values = records.map(r => r.ndvi);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const avg = values.reduce((a,b)=>a+b,0)/values.length;
+function updateStats(records){
+  const vals=records.map(r=>r.ndvi);
+  const min=Math.min(...vals).toFixed(2);
+  const max=Math.max(...vals).toFixed(2);
+  const avg=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
   document.getElementById('stats').innerHTML =
-    `Min: ${min.toFixed(2)} | Max: ${max.toFixed(2)} | Avg: ${avg.toFixed(2)}`;
+    `Min: ${min} | Max: ${max} | Avg: ${avg}`;
 }
 
-function createChart(records) {
-  const labels = records.map(r => r.date);
-  const values = records.map(r => r.ndvi);
-
-  if (chart) chart.destroy();
-
-  const ctx = document.getElementById('ndviChart');
-
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'NDVI',
-        data: values,
-        borderColor: '#00e2ff',
-        backgroundColor: 'rgba(0,226,255,0.25)',
-        fill: true, tension: 0.15
-      }]
-    },
-    options: {
-      scales: {
-        x: { type: 'time', time: { unit: 'month' }},
-        y: { min: -0.5, max: 1 }
-      },
-      plugins: { legend: { display: false } },
-      onHover(e, active) {
-        if (active.length) {
-          const idx = active[0].index;
-          highlightMapPoint(idx);
-        }
+function buildChart(records){
+  const labels=records.map(r=>r.date);
+  const vals=records.map(r=>r.ndvi);
+  if(chart)chart.destroy();
+  chart=new Chart(document.getElementById("ndviChart"),{
+    type:"line",
+    data:{labels,
+      datasets:[{data:vals,borderColor:"#00e2ff",
+      backgroundColor:"rgba(0,226,255,0.25)",fill:true,tension:0.15}]},
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{x:{type:"time",time:{unit:"month"}},
+              y:{min:-0.5,max:1}},
+      onHover(e,active){
+        if(active.length){highlightPoint(active[0].index);}
       }
     }
   });
 }
 
-function highlightMapPoint(index) {
-  markers.forEach((m,i)=>m.setStyle({
-    color: i===index?'#ffffff':'#06b6d4',
-    radius: i===index?7:4
-  }));
+function highlightPoint(i){
+ markers.forEach((m,x)=>m.setStyle({
+   color: x===i?"#ffffff":"#06b6d4",
+   radius: x===i?7:4
+ }));
 }
 
-function createMap(records) {
-  if (!map) {
-    map = L.map('map').setView([-0.5, 37.9], 10);
+function buildMap(records){
+  if(!map){
+    map=L.map("map").setView([-0.5,37.9],11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19})
-      .addTo(map);
+    .addTo(map);
   }
-  markers.forEach(m=>map.removeLayer(m));
-  markers = [];
-
-  records.forEach((rec,i)=>{
-    if(rec.lat && rec.lon) {
-      const marker = L.circleMarker([rec.lat, rec.lon], {
-        radius:4, color:'#06b6d4', opacity:0.9, fillOpacity:0.6
-      }).on('mouseover',()=>highlightMapPoint(i))
-        .bindPopup(`<b>${rec.date}</b><br>NDVI: ${rec.ndvi}`);
-      marker.addTo(map);
-      markers.push(marker);
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  records.forEach((r,i)=>{
+    if(r.lat && r.lon){
+      const mk=L.circleMarker([r.lat,r.lon],
+      {radius:4,color:"#06b6d4",fillOpacity:0.6})
+      .on("mouseover",()=>highlightPoint(i))
+      .bindPopup(`<b>${r.date}</b><br>NDVI: ${r.ndvi}`);
+      mk.addTo(map); markers.push(mk);
     }
   });
 }
 
-async function refresh() {
-  const loader = document.getElementById('loader');
-  loader.style.display = "block";
-
-  const site = document.getElementById('siteSelect').value;
-  const json = await loadData(site);
-
-  if (!json || !json.records) {
-    loader.innerHTML = "❌ NDVI dataset missing!";
+(async()=>{
+  const data=await loadNDVI();
+  const loader=document.getElementById("loader");
+  if(!data||!data.records){
+    loader.outerHTML='<div class="error">❌ Data not found (expected: data/kavutiri.json)</div>';
     return;
   }
-
-  createChart(json.records);
-  createMap(json.records);
-  updateStats(json.records);
-
-  loader.style.display = "none";
-}
-
-document.getElementById('siteSelect').addEventListener('change', refresh);
-refresh();
+  buildChart(data.records);
+  buildMap(data.records);
+  updateStats(data.records);
+  loader.style.display="none";
+})();
 </script>
 
 </body>
