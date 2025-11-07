@@ -3,113 +3,166 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kavutiri NDVI Interactive Visualization</title>
+  <title>NDVI Monitoring Dashboard</title>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
     :root{--bg:#0f1724;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;color:#e6eef8;background:linear-gradient(180deg,#071122 0%, #0b1630 100%);}    
-    .container{max-width:1200px;margin:24px auto;padding:18px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;justify-content:space-between}
-    h1{font-size:22px;margin:0}
-    .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    canvas{border-radius:10px;padding:8px;background:rgba(255,255,255,0.02)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui;color:#e6eef8;background:linear-gradient(180deg,#071122 0%, #0b1630 100%);}
+    .container{max-width:1250px;margin:24px auto;padding:18px}
+    header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+    h1{margin:0;font-size:24px}
+    Select{padding:8px 10px;border-radius:8px;border:none;background:#122035;color:#e8f6fd;font-size:14px}
+    .card{background:var(--card);padding:14px;border-radius:14px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:12px}
     #map{height:350px;border-radius:10px;margin-top:12px}
     .small{font-size:12px;color:var(--muted)}
+    #stats{font-size:13px;margin-top:6px;color:#a3d8e6}
+    .loading{text-align:center;margin:16px 0;font-size:13px}
     footer{text-align:center;margin-top:18px;font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div>
-        <h1>Kavutiri NDVI Visualization</h1>
-        <div class="small">Automatically loaded from JSON (GitHub-ready deployment)</div>
-      </div>
-    </header>
+<div class="container">
 
-    <div class="card">
-      <canvas id="ndviChart" height="220"></canvas>
+  <header>
+    <div>
+      <h1>NDVI Monitoring Dashboard</h1>
+      <div class="small">Interactive • Auto-loaded from JSON • Ready for GitHub Pages</div>
     </div>
 
-    <div class="card">
-      <div id="map"></div>
-    </div>
+    <select id="siteSelect">
+      <option value="kavutiri">Kavutiri</option>
+      <option value="nyeri">Nyeri</option>
+      <option value="kirinyaga">Kirinyaga</option>
+    </select>
+  </header>
 
-    <footer>© 2025 Rustic Garden Kavutiri | Built for GitHub Pages | Powered by Chart.js + Leaflet</footer>
+  <div class="card">
+    <canvas id="ndviChart" height="230"></canvas>
+    <div id="stats"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-  async function loadData() {
-    try {
-      const response = await fetch('ndvi_data.json');
-      const json = await response.json();
-      return json;
-    } catch (err) {
-      console.error('Error loading NDVI data:', err);
-      return null;
-    }
+  <div class="card">
+    <div id="map"></div>
+  </div>
+
+  <div id="loader" class="loading">Loading NDVI data...</div>
+
+  <footer>© 2025 Rustic Garden — GitHub Pages — Chart.js + Leaflet</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.4.0"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let chart, map, markers = [];
+
+async function loadData(site) {
+  try {
+    const response = await fetch(`data/${site}.json`);
+    return await response.json();
+  } catch {
+    return null;
   }
+}
 
-  function createChart(ctx, data) {
-    const dates = data.map(d => new Date(d.date));
-    const ndvi = data.map(d => d.ndvi);
+function updateStats(records) {
+  const values = records.map(r => r.ndvi);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const avg = values.reduce((a,b)=>a+b,0)/values.length;
+  document.getElementById('stats').innerHTML =
+    `Min: ${min.toFixed(2)} | Max: ${max.toFixed(2)} | Avg: ${avg.toFixed(2)}`;
+}
 
-    return new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: dates,
-        datasets: [{
-          label: 'NDVI',
-          data: ndvi,
-          borderColor: 'rgba(6,182,212,0.9)',
-          backgroundColor: 'rgba(6,182,212,0.2)',
-          fill: true,
-          tension: 0.15
-        }]
+function createChart(records) {
+  const labels = records.map(r => r.date);
+  const values = records.map(r => r.ndvi);
+
+  if (chart) chart.destroy();
+
+  const ctx = document.getElementById('ndviChart');
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'NDVI',
+        data: values,
+        borderColor: '#00e2ff',
+        backgroundColor: 'rgba(0,226,255,0.25)',
+        fill: true, tension: 0.15
+      }]
+    },
+    options: {
+      scales: {
+        x: { type: 'time', time: { unit: 'month' }},
+        y: { min: -0.5, max: 1 }
       },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { type: 'time', time: { unit: 'month' } },
-          y: { min: -0.5, max: 1 }
+      plugins: { legend: { display: false } },
+      onHover(e, active) {
+        if (active.length) {
+          const idx = active[0].index;
+          highlightMapPoint(idx);
         }
       }
-    });
-  }
-
-  function createMap(records) {
-    const map = L.map('map').setView([-0.5, 37.9], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    records.forEach(rec => {
-      if(rec.lat && rec.lon) {
-        L.circleMarker([rec.lat, rec.lon], {
-          radius: 4,
-          fillColor: '#06b6d4',
-          color: '#06b6d4',
-          opacity: 0.9,
-          fillOpacity: 0.6
-        }).bindPopup(`<b>${rec.date}</b><br>NDVI: ${rec.ndvi}`).addTo(map);
-      }
-    });
-  }
-
-  (async () => {
-    const json = await loadData();
-    if(!json || !json.records) {
-      document.body.innerHTML += '<p style="text-align:center;color:#f87171;">Error: ndvi_data.json not found or invalid.</p>';
-      return;
     }
+  });
+}
 
-    const ctx = document.getElementById('ndviChart');
-    createChart(ctx, json.records);
-    createMap(json.records);
-  })();
-  </script>
+function highlightMapPoint(index) {
+  markers.forEach((m,i)=>m.setStyle({
+    color: i===index?'#ffffff':'#06b6d4',
+    radius: i===index?7:4
+  }));
+}
+
+function createMap(records) {
+  if (!map) {
+    map = L.map('map').setView([-0.5, 37.9], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19})
+      .addTo(map);
+  }
+  markers.forEach(m=>map.removeLayer(m));
+  markers = [];
+
+  records.forEach((rec,i)=>{
+    if(rec.lat && rec.lon) {
+      const marker = L.circleMarker([rec.lat, rec.lon], {
+        radius:4, color:'#06b6d4', opacity:0.9, fillOpacity:0.6
+      }).on('mouseover',()=>highlightMapPoint(i))
+        .bindPopup(`<b>${rec.date}</b><br>NDVI: ${rec.ndvi}`);
+      marker.addTo(map);
+      markers.push(marker);
+    }
+  });
+}
+
+async function refresh() {
+  const loader = document.getElementById('loader');
+  loader.style.display = "block";
+
+  const site = document.getElementById('siteSelect').value;
+  const json = await loadData(site);
+
+  if (!json || !json.records) {
+    loader.innerHTML = "❌ NDVI dataset missing!";
+    return;
+  }
+
+  createChart(json.records);
+  createMap(json.records);
+  updateStats(json.records);
+
+  loader.style.display = "none";
+}
+
+document.getElementById('siteSelect').addEventListener('change', refresh);
+refresh();
+</script>
+
 </body>
 </html>
