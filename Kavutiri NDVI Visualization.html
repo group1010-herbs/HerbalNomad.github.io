@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive NDVI Timeline and Map for Kavutiri Farm — deployable on GitHub Pages" />
+  <meta name="author" content="Rustic Garden Kavutiri" />
+  <title>Kavutiri NDVI Timeline — GitHub Deployment</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="icon" href="https://raw.githubusercontent.com/github/explore/main/topics/html/html.png" />
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;color:#e6eef8;background:linear-gradient(180deg,#071122 0%, #0b1630 100%);}    
+    .container{max-width:1200px;margin:24px auto;padding:18px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;justify-content:space-between}
+    h1{font-size:22px;margin:0}
+    .gh-badge{font-size:12px;background:#18181b;padding:4px 8px;border-radius:8px;cursor:pointer;color:var(--accent)}
+    .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:12px}
+    .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type=file]{width:100%}
+    .row{display:flex;gap:12px}
+    .chart-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px}
+    canvas{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:10px;padding:8px}
+    #map{height:320px;border-radius:10px}
+    .stats{display:flex;flex-direction:column;gap:6px}
+    .stat{font-size:14px}
+    .small{font-size:12px;color:var(--muted)}
+    .btn{background:var(--accent);color:#04202a;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .3s ease-in-out}
+    .btn:hover{filter:brightness(1.1)}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted)}
+    footer{margin-top:24px;color:var(--muted);font-size:12px;text-align:center;padding:10px;border-top:1px solid rgba(255,255,255,0.08)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="https://raw.githubusercontent.com/github/explore/main/topics/map/map.png" alt="icon" style="width:46px;height:46px;border-radius:8px;">
+        <div>
+          <h1>Kavutiri NDVI Timeline — GitHub Version</h1>
+          <div class="small">Interactive NDVI visualization, analytics, and Leaflet map. Optimized for GitHub Pages.</div>
+        </div>
+      </div>
+      <a href="https://github.com/yourusername/kavutiri-ndvi" class="gh-badge" target="_blank">⭐ View on GitHub</a>
+    </header>
+
+    <div id="content"></div>
+  </div>
+
+  <footer>
+    © 2025 Rustic Garden Kavutiri | Powered by Chart.js + Leaflet | Open source under MIT License.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+  // Load dynamically for modular GitHub Pages use
+  document.getElementById('content').innerHTML = `<iframe src="main.html" title="NDVI timeline" frameborder="0" style="width:100%;height:90vh;border-radius:12px;background:#0f1724;"></iframe>`;
+  </script>
+
+  <script>
+  // GitHub Analytics snippet (optional for deployment)
+  if(location.hostname.includes('github.io')){
+    console.log('Running on GitHub Pages: analytics enabled');
+  }
+  </script>
+</body>
+</html>
