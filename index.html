@@ -1,300 +1,1173 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="description" content="Kavutiri Farm — Interactive NDVI timeline + map (GitHub Pages)" />
-<title>Kavutiri NDVI Timeline</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Kavutiri Farm — Coffee Authority, Land & Water Stewardship, NDVI Intelligence"/>
+<meta name="author" content="Kavutiri Farm"/>
+<title>Kavutiri Farm — Coffee Authority & Land Intelligence</title>
 
-<!-- Leaflet + Chart.js + Luxon -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- Leaflet & Chart.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+
 <style>
-  :root{
-    --bg:#071122;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4;
-    --text:#e6eef8;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071122 0%, #0b1630 100%);color:var(--text)}
-  .wrap{max-width:1200px;margin:18px auto;padding:16px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  h1{margin:0;font-size:20px}
-  .small{font-size:12px;color:var(--muted)}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .card{background:var(--card);border-radius:12px;padding:12px;margin-top:12px;box-shadow:0 6px 18px rgba(2,6,23,0.55)}
-  #topRow{display:grid;grid-template-columns:2fr 1fr;gap:12px}
-  canvas{width:100%;height:260px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:10px;padding:8px}
-  #map{height:360px;border-radius:10px;margin-top:6px}
-  .btn{background:var(--accent);border:none;color:#04202a;padding:8px 10px;border-radius:8px;cursor:pointer}
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  #stats{margin-top:8px;color:#bfeff7;font-size:13px}
-  .loading{padding:12px;text-align:center;color:var(--muted)}
-  .error{color:#ff8a8a;padding:10px;text-align:center}
-  @media (max-width:900px){
-    #topRow{grid-template-columns:1fr}
-    canvas{height:220px}
-    #map{height:280px}
-  }
+/* ───────────────────────────────────────────────
+   TOKENS & RESET
+──────────────────────────────────────────────── */
+:root{
+  --ink:#0e120d;
+  --parch:#f5f0e8;
+  --cream:#ede7d6;
+  --moss:#2d4a1e;
+  --fern:#3d6b2b;
+  --leaf:#5a8f3c;
+  --sage:#8aad6a;
+  --gold:#c8962a;
+  --amber:#e6b44a;
+  --rust:#8b3a1a;
+  --mist:#d4e4c8;
+  --fog:#e8f0e0;
+  --water:#2a5a6b;
+  --pool:#3a7a8e;
+  --sky:#c4dde8;
+  --text:#1a2415;
+  --muted:#6b7a5e;
+  --card-bg:rgba(245,240,232,0.82);
+  --border:rgba(45,74,30,0.12);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:#0e120d;
+  color:var(--text);
+  font-family:'Jost',sans-serif;
+  font-weight:300;
+  overflow-x:hidden;
+}
+
+/* ───────────────────────────────────────────────
+   GRAIN OVERLAY
+──────────────────────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+  opacity:0.4;
+}
+
+/* ───────────────────────────────────────────────
+   HERO
+──────────────────────────────────────────────── */
+.hero{
+  min-height:100svh;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(45,74,30,0.55) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 70% at 85% 20%, rgba(42,90,107,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, #111a0d 0%, #0e120d 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:48px 24px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* animated ring decoration */
+.hero-ring{
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(138,173,106,0.12);
+  animation:ringPulse 8s ease-in-out infinite;
+}
+.hero-ring:nth-child(1){width:420px;height:420px;animation-delay:0s}
+.hero-ring:nth-child(2){width:680px;height:680px;animation-delay:2s}
+.hero-ring:nth-child(3){width:940px;height:940px;animation-delay:4s}
+@keyframes ringPulse{
+  0%,100%{opacity:0.3;transform:scale(1)}
+  50%{opacity:0.6;transform:scale(1.01)}
+}
+
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  color:var(--sage);
+  margin-bottom:20px;
+  opacity:0;
+  animation:fadeUp 0.9s 0.3s ease forwards;
+}
+.hero h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(52px,8vw,104px);
+  font-weight:600;
+  line-height:0.95;
+  color:var(--parch);
+  letter-spacing:-0.02em;
+  opacity:0;
+  animation:fadeUp 1s 0.5s ease forwards;
+}
+.hero h1 em{
+  font-style:italic;
+  color:var(--amber);
+}
+.hero-sub{
+  font-size:clamp(14px,2vw,17px);
+  font-weight:300;
+  color:rgba(213,225,200,0.7);
+  max-width:560px;
+  margin:24px auto 40px;
+  line-height:1.7;
+  opacity:0;
+  animation:fadeUp 1s 0.7s ease forwards;
+}
+.hero-pills{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  opacity:0;
+  animation:fadeUp 1s 0.9s ease forwards;
+}
+.pill{
+  background:rgba(138,173,106,0.12);
+  border:1px solid rgba(138,173,106,0.25);
+  color:var(--sage);
+  padding:6px 16px;
+  border-radius:999px;
+  font-size:12px;
+  letter-spacing:0.05em;
+  font-family:'DM Mono',monospace;
+}
+
+/* scroll cue */
+.scroll-cue{
+  position:absolute;
+  bottom:32px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  color:rgba(138,173,106,0.5);
+  font-size:10px;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  font-family:'DM Mono',monospace;
+  animation:fadeUp 1s 1.4s ease forwards;
+  opacity:0;
+}
+.scroll-cue::after{
+  content:'';
+  width:1px;
+  height:40px;
+  background:linear-gradient(to bottom, rgba(138,173,106,0.5), transparent);
+  animation:lineDrop 2s 1.8s ease-in-out infinite;
+}
+@keyframes lineDrop{
+  0%{transform:scaleY(0);transform-origin:top}
+  50%{transform:scaleY(1);transform-origin:top}
+  51%{transform-origin:bottom}
+  100%{transform:scaleY(0);transform-origin:bottom}
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(22px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ───────────────────────────────────────────────
+   NAV
+──────────────────────────────────────────────── */
+nav{
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:100;
+  padding:14px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(14,18,13,0.7);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(138,173,106,0.08);
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;
+  font-weight:600;
+  color:var(--parch);
+  letter-spacing:0.02em;
+}
+.nav-logo span{color:var(--amber)}
+.nav-links{
+  display:flex;
+  gap:28px;
+  list-style:none;
+}
+.nav-links a{
+  font-size:12px;
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:rgba(213,225,200,0.6);
+  text-decoration:none;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--sage)}
+
+/* ───────────────────────────────────────────────
+   SECTION SHELL
+──────────────────────────────────────────────── */
+section{padding:88px 24px}
+.section-inner{max-width:1160px;margin:0 auto}
+
+.section-label{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  color:var(--sage);
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.section-label::before{
+  content:'';
+  width:32px;height:1px;
+  background:var(--sage);
+  opacity:0.5;
+}
+.section-heading{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,5vw,64px);
+  font-weight:600;
+  line-height:1.05;
+  color:var(--parch);
+  letter-spacing:-0.02em;
+  margin-bottom:20px;
+}
+.section-heading em{font-style:italic;color:var(--amber)}
+.section-body{
+  font-size:16px;
+  line-height:1.8;
+  color:rgba(213,225,200,0.65);
+  max-width:640px;
+}
+
+/* light section */
+.light-section{
+  background:var(--parch);
+}
+.light-section .section-heading{color:var(--ink)}
+.light-section .section-body{color:var(--muted)}
+.light-section .section-label{color:var(--fern)}
+.light-section .section-label::before{background:var(--fern)}
+
+/* ───────────────────────────────────────────────
+   PHILOSOPHY / IDENTITY BLOCK
+──────────────────────────────────────────────── */
+#about{
+  background:
+    radial-gradient(ellipse 50% 80% at 0% 50%, rgba(45,74,30,0.2), transparent 60%),
+    #0e120d;
+}
+.about-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:64px;
+  align-items:center;
+  margin-top:48px;
+}
+.about-stat{
+  border-left:2px solid var(--amber);
+  padding-left:20px;
+  margin-bottom:32px;
+}
+.about-stat .num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:56px;
+  font-weight:700;
+  color:var(--amber);
+  line-height:1;
+}
+.about-stat .label{
+  font-size:12px;
+  color:var(--muted);
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  margin-top:4px;
+}
+.about-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(22px,3vw,32px);
+  font-style:italic;
+  color:var(--parch);
+  line-height:1.45;
+  opacity:0.85;
+}
+
+@media(max-width:760px){
+  .about-grid{grid-template-columns:1fr;gap:32px}
+}
+
+/* ───────────────────────────────────────────────
+   FOLIAR / INPUTS CARDS
+──────────────────────────────────────────────── */
+#foliar{
+  background:linear-gradient(170deg, #111a0d 0%, #0c1a10 100%);
+}
+.foliar-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  margin-top:48px;
+}
+.foliar-card{
+  background:rgba(45,74,30,0.15);
+  border:1px solid rgba(90,143,60,0.2);
+  border-radius:16px;
+  padding:28px 24px;
+  transition:transform 0.3s, background 0.3s, border-color 0.3s;
+  position:relative;
+  overflow:hidden;
+}
+.foliar-card::before{
+  content:'';
+  position:absolute;
+  top:-30px;right:-30px;
+  width:100px;height:100px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(138,173,106,0.1), transparent 70%);
+  pointer-events:none;
+}
+.foliar-card:hover{
+  transform:translateY(-4px);
+  background:rgba(45,74,30,0.25);
+  border-color:rgba(90,143,60,0.4);
+}
+.foliar-icon{
+  font-size:32px;
+  margin-bottom:14px;
+  display:block;
+}
+.foliar-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;
+  font-weight:600;
+  color:var(--parch);
+  margin-bottom:8px;
+}
+.foliar-sci{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  color:var(--sage);
+  letter-spacing:0.12em;
+  margin-bottom:12px;
+  text-transform:uppercase;
+}
+.foliar-desc{
+  font-size:13px;
+  line-height:1.7;
+  color:rgba(213,225,200,0.6);
+}
+
+/* ───────────────────────────────────────────────
+   WATER & FISH
+──────────────────────────────────────────────── */
+#water{
+  background:
+    radial-gradient(ellipse 60% 80% at 100% 30%, rgba(42,90,107,0.2), transparent 60%),
+    #0e120d;
+}
+.water-layout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:48px;
+  align-items:start;
+  margin-top:48px;
+}
+.water-panel{
+  background:rgba(42,90,107,0.12);
+  border:1px solid rgba(42,90,107,0.25);
+  border-radius:16px;
+  padding:32px;
+}
+.water-panel-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px;
+  font-weight:600;
+  color:var(--sky);
+  margin-bottom:14px;
+}
+.water-panel p{
+  font-size:14px;
+  line-height:1.8;
+  color:rgba(196,221,232,0.7);
+}
+.fish-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(42,90,107,0.25);
+  border:1px solid rgba(42,90,107,0.4);
+  color:var(--sky);
+  padding:5px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-family:'DM Mono',monospace;
+  margin:4px;
+}
+.tag-row{margin-top:16px;display:flex;flex-wrap:wrap}
+@media(max-width:760px){
+  .water-layout{grid-template-columns:1fr}
+}
+
+/* ───────────────────────────────────────────────
+   RESEARCH THESIS BLOCK (from PDF)
+──────────────────────────────────────────────── */
+#thesis{
+  background:var(--cream);
+}
+.thesis-box{
+  background:#fff;
+  border-left:4px solid var(--moss);
+  border-radius:0 12px 12px 0;
+  padding:28px 32px;
+  margin-top:40px;
+  box-shadow:0 4px 24px rgba(14,18,13,0.08);
+}
+.thesis-box p{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;
+  line-height:1.7;
+  color:var(--ink);
+  font-style:italic;
+}
+.thesis-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  margin-top:32px;
+}
+.t-stat{
+  text-align:center;
+  padding:24px;
+  background:var(--fog);
+  border-radius:12px;
+  border:1px solid var(--border);
+}
+.t-stat .n{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:700;
+  color:var(--moss);
+  line-height:1;
+}
+.t-stat .u{font-size:18px;color:var(--gold)}
+.t-stat .d{
+  font-size:12px;
+  color:var(--muted);
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  margin-top:6px;
+}
+@media(max-width:600px){
+  .thesis-stats{grid-template-columns:1fr}
+}
+
+/* ───────────────────────────────────────────────
+   NDVI DASHBOARD
+──────────────────────────────────────────────── */
+#ndvi{
+  background:linear-gradient(180deg,#071122 0%,#0b1630 100%);
+}
+.ndvi-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+  margin-bottom:24px;
+}
+.ndvi-controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.ndvi-btn{
+  background:rgba(6,182,212,0.15);
+  border:1px solid rgba(6,182,212,0.3);
+  color:#06b6d4;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-family:'DM Mono',monospace;
+  font-size:12px;
+  transition:all 0.2s;
+}
+.ndvi-btn:hover{background:rgba(6,182,212,0.28)}
+.ndvi-btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.08);color:rgba(148,163,184,0.8)}
+
+.ndvi-card{
+  background:rgba(11,18,32,0.85);
+  border:1px solid rgba(6,182,212,0.1);
+  border-radius:14px;
+  padding:16px;
+}
+.ndvi-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:16px;
+  margin-top:16px;
+}
+canvas{width:100%;height:260px;border-radius:10px;padding:8px}
+#map{height:360px;border-radius:10px;margin-top:8px}
+#stats{
+  margin-top:10px;
+  color:#bfeff7;
+  font-family:'DM Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.05em;
+}
+.ndvi-loader{padding:24px;text-align:center;color:rgba(148,163,184,0.7);font-family:'DM Mono',monospace;font-size:13px}
+.ndvi-error{color:#ff8a8a;padding:12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px}
+
+@media(max-width:860px){
+  .ndvi-grid{grid-template-columns:1fr}
+  canvas{height:200px}
+  #map{height:260px}
+}
+
+/* ───────────────────────────────────────────────
+   PILLARS
+──────────────────────────────────────────────── */
+#pillars{background:#0e120d}
+.pillars-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  margin-top:48px;
+}
+.pillar-item{
+  padding:28px 24px;
+  border:1px solid rgba(200,150,42,0.18);
+  border-radius:14px;
+  background:rgba(200,150,42,0.04);
+  transition:border-color 0.3s, background 0.3s;
+}
+.pillar-item:hover{
+  border-color:rgba(200,150,42,0.45);
+  background:rgba(200,150,42,0.08);
+}
+.pillar-num{
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  color:var(--amber);
+  letter-spacing:0.15em;
+  margin-bottom:14px;
+}
+.pillar-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;
+  font-weight:600;
+  color:var(--parch);
+  margin-bottom:10px;
+}
+.pillar-body{
+  font-size:13px;
+  line-height:1.75;
+  color:rgba(213,225,200,0.6);
+}
+
+/* ───────────────────────────────────────────────
+   FOOTER
+──────────────────────────────────────────────── */
+footer{
+  background:#070d06;
+  border-top:1px solid rgba(138,173,106,0.08);
+  padding:48px 24px 32px;
+  text-align:center;
+}
+.footer-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;
+  font-weight:600;
+  color:var(--parch);
+  margin-bottom:8px;
+}
+.footer-logo span{color:var(--amber)}
+.footer-tagline{
+  font-size:12px;
+  font-family:'DM Mono',monospace;
+  color:var(--muted);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin-bottom:24px;
+}
+.footer-links{
+  display:flex;
+  justify-content:center;
+  gap:24px;
+  flex-wrap:wrap;
+  margin-bottom:32px;
+}
+.footer-links a{
+  font-size:11px;
+  font-family:'DM Mono',monospace;
+  color:var(--muted);
+  text-decoration:none;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  transition:color 0.2s;
+}
+.footer-links a:hover{color:var(--sage)}
+.footer-copy{
+  font-size:11px;
+  color:rgba(107,122,94,0.5);
+  font-family:'DM Mono',monospace;
+}
+
+/* ───────────────────────────────────────────────
+   SCROLL REVEAL
+──────────────────────────────────────────────── */
+.reveal{
+  opacity:0;
+  transform:translateY(28px);
+  transition:opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible{opacity:1;transform:none}
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>Kavutiri NDVI Timeline</h1>
-      <div class="small">Interactive NDVI timeline & map — place `data/kavutiri.json` in the same repo for GitHub Pages</div>
-    </div>
 
-    <div class="controls">
-      <label class="small" for="upload" style="margin-right:6px">Upload JSON</label>
-      <input id="upload" type="file" accept="application/json" />
-      <button id="downloadCsv" class="btn secondary" title="Download CSV">Download CSV</button>
-    </div>
-  </header>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Kavutiri <span>Farm</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#foliar">Foliar</a></li>
+    <li><a href="#water">Water</a></li>
+    <li><a href="#thesis">Research</a></li>
+    <li><a href="#ndvi">NDVI</a></li>
+    <li><a href="#pillars">Pillars</a></li>
+  </ul>
+</nav>
 
-  <div id="loader" class="loading card">Loading NDVI data…</div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-ring"></div>
+  <div class="hero-ring"></div>
+  <div class="hero-ring"></div>
+  <div class="hero-eyebrow">Kavutiri Farm · Kirinyaga County, Kenya</div>
+  <h1>Coffee <em>Authority</em><br>Land Intelligence</h1>
+  <p class="hero-sub">
+    From the slopes of Mount Kenya — precision agronomy, biogenic foliar science,
+    integrated water stewardship, and living NDVI intelligence for every plot we tend.
+  </p>
+  <div class="hero-pills">
+    <span class="pill">☕ Specialty Arabica</span>
+    <span class="pill">🌿 Foliar Biogenics</span>
+    <span class="pill">🐟 Aquaponics</span>
+    <span class="pill">💧 Water Management</span>
+    <span class="pill">📡 NDVI Monitoring</span>
+  </div>
+  <div class="scroll-cue">Scroll</div>
+</section>
 
-  <div id="dashboard" style="display:none">
-    <div class="card" id="topRow">
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-inner">
+    <div class="section-label">Who We Are</div>
+    <h2 class="section-heading">A <em>living</em> system,<br>not just a farm</h2>
+    <div class="about-grid reveal">
       <div>
-        <canvas id="ndviChart"></canvas>
-        <div id="stats" aria-live="polite">—</div>
+        <div class="about-stat">
+          <div class="num">1908</div>
+          <div class="label">Year Kenya's coffee research tradition began</div>
+        </div>
+        <div class="about-stat">
+          <div class="num">105K</div>
+          <div class="label">Hectares of stable coffee land in Kenya</div>
+        </div>
+        <div class="about-stat">
+          <div class="num">SL28/34</div>
+          <div class="label">World-premium varieties we steward</div>
+        </div>
       </div>
-      <div class="card" style="height:100%">
-        <div class="small">Map view</div>
-        <div id="map"></div>
+      <div>
+        <p class="about-quote">
+          "Productive farming systems are ultimately social and institutional systems
+          before they are technical systems."
+        </p>
+        <p style="margin-top:24px;font-size:14px;line-height:1.85;color:rgba(213,225,200,0.6)">
+          Kavutiri Farm integrates the institutional wisdom of Kenya's Ruiru Knowledge Network
+          with cutting-edge satellite NDVI monitoring, biogenic foliar production, and
+          aquaponic nutrient cycling. We treat our land as a closed-loop ecosystem where
+          every element — plant, fish, water, microbe — feeds the next.
+        </p>
       </div>
     </div>
   </div>
+</section>
 
-  <div id="error" style="display:none" class="error card"></div>
-</div>
+<!-- FOLIAR BIOGENICS -->
+<section id="foliar">
+  <div class="section-inner">
+    <div class="section-label">Foliar Biogenics</div>
+    <h2 class="section-heading">We brew our own<br><em>plant intelligence</em></h2>
+    <p class="section-body">
+      Every foliar application at Kavutiri is crafted on-farm from medicinal and functional
+      plants grown in our living buffer zones. No synthetic chemistry — only phytochemical
+      precision validated by observable plant response.
+    </p>
+    <div class="foliar-grid reveal">
 
-<!-- Scripts -->
+      <div class="foliar-card">
+        <span class="foliar-icon">🌳</span>
+        <div class="foliar-name">Warburgia</div>
+        <div class="foliar-sci">Warburgia ugandensis</div>
+        <p class="foliar-desc">
+          East African pepper-bark tree. Rich in sesquiterpene dialdehyde compounds
+          with powerful antifungal and antibacterial action. Our extracts suppress
+          coffee berry disease (CBD) fungal pressure when applied at canopy closure.
+          Also serves as an insect deterrent via volatile compound emission.
+        </p>
+      </div>
+
+      <div class="foliar-card">
+        <span class="foliar-icon">🌵</span>
+        <div class="foliar-name">Aloe Vera</div>
+        <div class="foliar-sci">Aloe barbadensis miller</div>
+        <p class="foliar-desc">
+          Our aloe extract serves as a natural biostimulant carrier and surfactant.
+          The mucilage coats leaf surfaces, prolonging active-ingredient contact time.
+          Salicylic acid precursors in aloe activate plant systemic resistance (SAR),
+          priming the coffee tree to defend itself before pathogen arrival.
+        </p>
+      </div>
+
+      <div class="foliar-card">
+        <span class="foliar-icon">🌸</span>
+        <div class="foliar-name">Cape Periwinkle</div>
+        <div class="foliar-sci">Catharanthus roseus</div>
+        <p class="foliar-desc">
+          Source of alkaloids including vindoline and catharanthine. Used in our
+          foliar blend as a natural nematocide and growth modulator. Inter-planted
+          throughout our orchard as a living mulch that also suppresses soil-borne
+          nematode populations between fertigated rows.
+        </p>
+      </div>
+
+      <div class="foliar-card">
+        <span class="foliar-icon">🔬</span>
+        <div class="foliar-name">Blend Protocol</div>
+        <div class="foliar-sci">Kavutiri Brew Method</div>
+        <p class="foliar-desc">
+          Plant material is cold-macerated for 48 hours, then warm-fermented for
+          72 hours with activated EM (effective microorganisms). The resulting
+          extract is diluted to field concentration, pH-adjusted to 6.2–6.5,
+          and applied early morning during berry development and flowering stages.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WATER & FISH -->
+<section id="water">
+  <div class="section-inner">
+    <div class="section-label">Water & Aquaponics</div>
+    <h2 class="section-heading"><em>Fish</em> feed<br>our coffee trees</h2>
+    <p class="section-body" style="color:rgba(196,221,232,0.65)">
+      Freshwater fish ponds are integrated into our irrigation system, transforming
+      water management from a delivery function into a nutrient cycling engine.
+    </p>
+    <div class="water-layout reveal">
+      <div>
+        <div class="water-panel" style="margin-bottom:16px">
+          <div class="water-panel-title">💧 Integrated Irrigation</div>
+          <p>
+            Following the breakdown patterns identified in Kenya's national irrigation scholarship,
+            Kavutiri operates a gravity-fed micro-scheme with timed delivery matching
+            critical phenological windows: flowering (water stress avoided), berry swelling
+            (peak demand), and post-harvest (minimum input). Scheduling is cross-referenced
+            against live NDVI stress signals from our satellite feed.
+          </p>
+        </div>
+        <div class="water-panel">
+          <div class="water-panel-title">🌊 Water Stewardship</div>
+          <p>
+            We capture hillside runoff in lined retention ponds, reducing erosion while
+            building a reserve buffer for dry-spell supplementary irrigation. All
+            drainage is filtered through vetiver grass terraces before re-entering
+            watercourses — a closed-loop that protects downstream ecologies.
+          </p>
+        </div>
+      </div>
+      <div class="water-panel">
+        <div class="water-panel-title">🐟 Fish for Coffee</div>
+        <p style="margin-bottom:16px">
+          Our tilapia and catfish ponds are positioned uphill of the coffee rows.
+          Nutrient-rich pond water — loaded with fish excreta (ammonia converted
+          to bioavailable nitrate by nitrifying bacteria) — is timed into drip
+          fertigation lines at weekly intervals during the growing season.
+        </p>
+        <p style="margin-bottom:16px">
+          This delivers a slow-release nitrogen source without the salt-loading
+          risk of synthetic fertilisers, while the fish consume plant debris
+          introduced to the pond from pruning operations — closing the loop.
+        </p>
+        <div class="tag-row">
+          <span class="fish-tag">🐟 Nile Tilapia</span>
+          <span class="fish-tag">🐠 Catfish</span>
+          <span class="fish-tag">♻️ EM Bacteria</span>
+          <span class="fish-tag">💧 Drip Fertigation</span>
+          <span class="fish-tag">🌾 Vetiver Filter</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THESIS / RESEARCH CONTEXT -->
+<section id="thesis" class="light-section">
+  <div class="section-inner">
+    <div class="section-label">Research Context</div>
+    <h2 class="section-heading" style="color:var(--ink)">The <em style="color:var(--rust)">institutional</em><br>case for Kavutiri</h2>
+
+    <div class="thesis-box reveal">
+      <p>
+        "Kenya's coffee production decline since 1988 is not agronomic in origin. It is institutional:
+        the withdrawal of state extension investment dismantled the knowledge-transfer architecture
+        that is essential for farmer behaviour change."
+      </p>
+      <p style="margin-top:16px;font-family:'Jost',sans-serif;font-size:14px;font-style:normal;color:var(--muted)">
+        — Gitari, D.M. (2025). <em>Irrigation Failure as Institutional Breakdown</em>. ALR6110.
+      </p>
+    </div>
+
+    <div class="thesis-stats reveal">
+      <div class="t-stat">
+        <div class="n">130<span class="u">K</span></div>
+        <div class="d">MT coffee peak (1988)</div>
+      </div>
+      <div class="t-stat">
+        <div class="n">34<span class="u">K</span></div>
+        <div class="d">MT by 2020/21</div>
+      </div>
+      <div class="t-stat">
+        <div class="n">13<span class="u">:1</span></div>
+        <div class="d">ROI on extension rebuilding</div>
+      </div>
+    </div>
+
+    <p style="margin-top:32px;font-size:15px;line-height:1.85;color:var(--muted);max-width:700px">
+      Kavutiri exists as a living proof-of-concept for the five-pillar reconstruction thesis:
+      demonstration farming, continuous advisory presence, spaced-repetition knowledge sharing,
+      feedback loops to research, and premium market integration. We are not waiting for
+      national policy to rebuild the extension network — we are doing it at farm scale.
+    </p>
+  </div>
+</section>
+
+<!-- NDVI DASHBOARD -->
+<section id="ndvi">
+  <div class="section-inner">
+    <div class="ndvi-header">
+      <div>
+        <div class="section-label">Satellite Intelligence</div>
+        <h2 class="section-heading" style="font-size:clamp(28px,4vw,48px);margin-bottom:0">NDVI <em>Timeline</em></h2>
+        <p style="font-size:13px;font-family:'DM Mono',monospace;color:rgba(148,163,184,0.6);margin-top:4px">
+          Upload your JSON · Click map markers · Hover the chart
+        </p>
+      </div>
+      <div class="ndvi-controls">
+        <label for="upload" style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(148,163,184,0.7);letter-spacing:0.08em;cursor:pointer">
+          Upload JSON
+          <input id="upload" type="file" accept="application/json" style="display:none"/>
+        </label>
+        <button id="downloadCsv" class="ndvi-btn secondary">↓ CSV</button>
+      </div>
+    </div>
+
+    <div id="ndvi-loader" class="ndvi-card ndvi-loader">Loading NDVI data…</div>
+
+    <div id="ndvi-dashboard" style="display:none">
+      <div class="ndvi-card">
+        <div class="ndvi-grid">
+          <div>
+            <canvas id="ndviChart"></canvas>
+            <div id="stats">—</div>
+          </div>
+          <div class="ndvi-card" style="padding:10px">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(148,163,184,0.5);letter-spacing:0.1em;margin-bottom:6px">MAP VIEW</div>
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ndvi-error" style="display:none" class="ndvi-card ndvi-error"></div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section id="pillars">
+  <div class="section-inner">
+    <div class="section-label">Reconstruction Programme</div>
+    <h2 class="section-heading">Five <em>pillars</em><br>at farm scale</h2>
+    <p class="section-body">
+      Drawing directly from the Ruiru Knowledge Network's 1956–57 operational model,
+      Kavutiri implements all five pillars identified by current research as essential
+      for sustained coffee productivity.
+    </p>
+    <div class="pillars-list reveal">
+
+      <div class="pillar-item">
+        <div class="pillar-num">01 ·</div>
+        <div class="pillar-title">Advisory Presence</div>
+        <p class="pillar-body">
+          Continuous on-farm advisory visits — mirroring the district-resident officer
+          model — with structured observation protocols and direct farmer dialogue.
+        </p>
+      </div>
+
+      <div class="pillar-item">
+        <div class="pillar-num">02 ·</div>
+        <div class="pillar-title">Demonstration Farming</div>
+        <p class="pillar-body">
+          Treated vs. untreated comparison plots visible to neighbouring farmers, with
+          transparent cost and yield data shared at open days.
+        </p>
+      </div>
+
+      <div class="pillar-item">
+        <div class="pillar-num">03 ·</div>
+        <div class="pillar-title">Knowledge Cadence</div>
+        <p class="pillar-body">
+          Monthly advisory bulletins and seasonal workshops using spaced-repetition
+          principles to embed agronomic practice — not just awareness.
+        </p>
+      </div>
+
+      <div class="pillar-item">
+        <div class="pillar-num">04 ·</div>
+        <div class="pillar-title">Feedback Loops</div>
+        <p class="pillar-body">
+          Quarterly review committees with cooperative managers, pest scouts, and
+          buyers — field observations informing research priorities.
+        </p>
+      </div>
+
+      <div class="pillar-item">
+        <div class="pillar-num">05 ·</div>
+        <div class="pillar-title">Premium Markets</div>
+        <p class="pillar-body">
+          Direct relationships with specialty roasters in Germany, the Nordic countries,
+          and the United States — commercial proof embedded in the farm system.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Kavutiri <span>Farm</span></div>
+  <div class="footer-tagline">Coffee Authority · Land Intelligence · Kirinyaga, Kenya</div>
+  <div class="footer-links">
+    <a href="#about">About</a>
+    <a href="#foliar">Foliar Biogenics</a>
+    <a href="#water">Water & Fish</a>
+    <a href="#thesis">Research</a>
+    <a href="#ndvi">NDVI</a>
+    <a href="#pillars">Pillars</a>
+  </div>
+  <div class="footer-copy">© 2025 Kavutiri Farm. Powered by Chart.js + Leaflet. Open science, open land.</div>
+</footer>
+
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.4.0"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-/*
- Expected JSON (relative: data/kavutiri.json)
- {
-   "records":[
-     {"date":"2025-01-10","ndvi":0.68,"lat":-0.498,"lon":37.912},
-     ...
-   ]
- }
-*/
+/* ═══════════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════════ */
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible')}});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 
+/* ═══════════════════════════════════════════════
+   NDVI DASHBOARD
+═══════════════════════════════════════════════ */
 const DEFAULT_JSON = 'data/kavutiri.json';
 let ndviData = [];
 let chart = null;
 let map = null;
 let markers = [];
 
-/* Utility: load JSON from relative path */
-async function loadJson(path) {
-  try {
-    const res = await fetch(path, {cache: "no-store"});
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    throw err;
-  }
+async function loadJson(path){
+  const res = await fetch(path,{cache:'no-store'});
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-/* CSV export helper */
-function recordsToCsv(records) {
-  const header = ['date','ndvi','lat','lon'];
-  const rows = records.map(r => [r.date, r.ndvi, r.lat ?? '', r.lon ?? '']);
-  return [header, ...rows].map(r => r.join(',')).join('\n');
+function recordsToCsv(records){
+  const header=['date','ndvi','lat','lon'];
+  const rows=records.map(r=>[r.date,r.ndvi,r.lat??'',r.lon??'']);
+  return [header,...rows].map(r=>r.join(',')).join('\n');
 }
-function downloadCsv(filename, content) {
-  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },500);
+function downloadCsv(filename,content){
+  const blob=new Blob([content],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500);
 }
 
-/* Stats */
 function updateStats(records){
-  if(!records.length) return document.getElementById('stats').textContent = 'No data';
-  const vals = records.map(r=>Number(r.ndvi)).filter(v=>!Number.isNaN(v));
-  const min = Math.min(...vals), max = Math.max(...vals);
-  const avg = (vals.reduce((a,b)=>a+b,0)/vals.length);
-  document.getElementById('stats').textContent =
-    `Count: ${records.length}  •  Min: ${min.toFixed(3)}  •  Max: ${max.toFixed(3)}  •  Avg: ${avg.toFixed(3)}`;
+  if(!records.length) return document.getElementById('stats').textContent='No data';
+  const vals=records.map(r=>Number(r.ndvi)).filter(v=>!Number.isNaN(v));
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  document.getElementById('stats').textContent=
+    `n: ${records.length}  ·  min: ${min.toFixed(3)}  ·  max: ${max.toFixed(3)}  ·  avg: ${avg.toFixed(3)}`;
 }
 
-/* Build chart */
-function buildChart(records) {
-  const ctx = document.getElementById('ndviChart').getContext('2d');
-  const labels = records.map(r => r.date);
-  const values = records.map(r => r.ndvi);
-
-  if(chart) {
-    chart.destroy();
-    chart = null;
-  }
-
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'NDVI',
-        data: values,
-        borderColor: '#06b6d4',
-        backgroundColor: 'rgba(6,182,212,0.18)',
-        fill: true,
-        tension: 0.15,
-        pointRadius: 3,
-        pointHoverRadius: 6
+function buildChart(records){
+  const ctx=document.getElementById('ndviChart').getContext('2d');
+  if(chart){chart.destroy();chart=null;}
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:records.map(r=>r.date),
+      datasets:[{
+        label:'NDVI',
+        data:records.map(r=>r.ndvi),
+        borderColor:'#06b6d4',
+        backgroundColor:'rgba(6,182,212,0.12)',
+        fill:true,tension:0.15,pointRadius:3,pointHoverRadius:7
       }]
     },
-    options: {
-      interaction: {mode: 'nearest', intersect: false},
-      plugins: {legend:{display:false}},
-      scales: {
-        x: {type: 'time', time: {unit: 'month', tooltipFormat:'yyyy-LL-dd'}},
-        y: {min: -0.5, max: 1}
+    options:{
+      interaction:{mode:'nearest',intersect:false},
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{type:'time',time:{unit:'month',tooltipFormat:'yyyy-LL-dd'},
+          ticks:{color:'rgba(148,163,184,0.6)',font:{family:"'DM Mono',monospace",size:10}},
+          grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{min:-0.5,max:1,
+          ticks:{color:'rgba(148,163,184,0.6)',font:{family:"'DM Mono',monospace",size:10}},
+          grid:{color:'rgba(255,255,255,0.04)'}}
       },
-      onHover(evt, active) {
-        if(active && active.length) {
-          const idx = active[0].index;
-          highlightMarker(idx);
-        } else {
-          highlightMarker(-1);
-        }
-      },
-      onClick(evt, active) {
-        if(active && active.length) {
-          const idx = active[0].index;
-          flyToMarker(idx);
-        }
-      },
-      maintainAspectRatio: false,
+      onHover(evt,active){if(active&&active.length)highlightMarker(active[0].index);else highlightMarker(-1)},
+      onClick(evt,active){if(active&&active.length)flyToMarker(active[0].index)},
+      maintainAspectRatio:false,
     }
   });
 }
 
-/* Map operations */
-function initMap(center=[-0.5,37.9], zoom=11) {
+function initMap(center=[-0.5,37.9],zoom=11){
   if(map) return;
-  map = L.map('map', {preferCanvas:true}).setView(center, zoom);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:''}).addTo(map);
+  map=L.map('map',{preferCanvas:true}).setView(center,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:''}).addTo(map);
 }
-function clearMarkers(){
-  markers.forEach(m=>map.removeLayer(m));
-  markers = [];
-}
+function clearMarkers(){markers.forEach(m=>map.removeLayer(m));markers=[];}
 function buildMarkers(records){
   clearMarkers();
-  records.forEach((r, idx) => {
-    if (typeof r.lat !== 'number' || typeof r.lon !== 'number') return;
-    const m = L.circleMarker([r.lat, r.lon], {radius:4, color:'#06b6d4', fillOpacity:0.75});
+  records.forEach((r,idx)=>{
+    if(typeof r.lat!=='number'||typeof r.lon!=='number') return;
+    const m=L.circleMarker([r.lat,r.lon],{radius:4,color:'#06b6d4',fillOpacity:0.8});
     m.addTo(map);
-    m.on('mouseover', ()=> {
-      // programmatically highlight chart point
+    m.on('mouseover',()=>highlightChartPoint(idx));
+    m.on('click',()=>{
       highlightChartPoint(idx);
-    });
-    m.on('click', ()=> {
-      highlightChartPoint(idx);
-      // open popup
       m.bindPopup(`<b>${r.date}</b><br>NDVI: ${r.ndvi}`).openPopup();
     });
     markers.push(m);
   });
 }
-
-/* Highlight helpers */
-function highlightMarker(index) {
-  markers.forEach((m,i)=>{
-    m.setStyle({color: i===index ? '#ffffff' : '#06b6d4', radius: i===index ? 7 : 4});
-  });
+function highlightMarker(index){
+  markers.forEach((m,i)=>m.setStyle({color:i===index?'#ffffff':'#06b6d4',radius:i===index?8:4}));
 }
 function highlightChartPoint(index){
   if(!chart) return;
-  if(index < 0) {
-    chart.setActiveElements([]);
-    chart.tooltip.setActiveElements([], {x:0,y:0});
-    chart.update();
-    return;
-  }
-  const datasetIndex = 0;
-  chart.setActiveElements([{datasetIndex, index}]);
-  // position tooltip near the chart point
-  const el = chart.getDatasetMeta(datasetIndex).data[index];
+  if(index<0){chart.setActiveElements([]);chart.update();return;}
+  const di=0;
+  chart.setActiveElements([{datasetIndex:di,index}]);
+  const el=chart.getDatasetMeta(di).data[index];
   if(el){
-    const rect = chart.canvas.getBoundingClientRect();
-    const x = el.x + rect.left;
-    const y = el.y + rect.top;
-    chart.tooltip.setActiveElements([{datasetIndex, index}], {x: x, y: y});
+    const rect=chart.canvas.getBoundingClientRect();
+    chart.tooltip.setActiveElements([{datasetIndex:di,index}],{x:el.x+rect.left,y:el.y+rect.top});
     chart.update();
   }
   highlightMarker(index);
 }
 function flyToMarker(index){
-  if(markers[index]) map.flyTo(markers[index].getLatLng(), Math.max(map.getZoom(), 14));
+  if(markers[index]) map.flyTo(markers[index].getLatLng(),Math.max(map.getZoom(),14));
 }
 
-/* Load and render dataset */
-async function loadAndRender(path, fromUpload=false) {
-  const loader = document.getElementById('loader');
-  const dashboard = document.getElementById('dashboard');
-  const errorEl = document.getElementById('error');
-  loader.style.display = 'block';
-  dashboard.style.display = 'none';
-  errorEl.style.display = 'none';
-  try {
-    const payload = fromUpload ? path : await loadJson(path);
-    const data = fromUpload ? payload : payload;
-    if(!data || !Array.isArray(data.records)) throw new Error('JSON missing "records" array');
-
-    ndviData = data.records
-      .map(r => ({ date: r.date, ndvi: Number(r.ndvi), lat: typeof r.lat === 'number' ? r.lat : (Number(r.latitude) || null), lon: typeof r.lon === 'number' ? r.lon : (Number(r.longitude) || null) }))
-      .sort((a,b)=> new Date(a.date) - new Date(b.date));
-
+async function loadAndRender(path,fromUpload=false){
+  const loader=document.getElementById('ndvi-loader');
+  const dash=document.getElementById('ndvi-dashboard');
+  const err=document.getElementById('ndvi-error');
+  loader.style.display='block';dash.style.display='none';err.style.display='none';
+  try{
+    const payload=fromUpload?path:await loadJson(path);
+    if(!payload||!Array.isArray(payload.records)) throw new Error('JSON missing "records" array');
+    ndviData=payload.records
+      .map(r=>({date:r.date,ndvi:Number(r.ndvi),
+        lat:typeof r.lat==='number'?r.lat:(Number(r.latitude)||null),
+        lon:typeof r.lon==='number'?r.lon:(Number(r.longitude)||null)}))
+      .sort((a,b)=>new Date(a.date)-new Date(b.date));
     if(!ndviData.length) throw new Error('No NDVI records found');
-
-    // init UI components
     initMap();
     buildChart(ndviData);
     buildMarkers(ndviData);
     updateStats(ndviData);
-
-    loader.style.display = 'none';
-    dashboard.style.display = 'block';
-  } catch (err) {
-    loader.style.display = 'none';
-    errorEl.style.display = 'block';
-    errorEl.textContent = 'Error loading NDVI data: ' + err.message;
-    console.error(err);
+    loader.style.display='none';
+    dash.style.display='block';
+  } catch(e){
+    loader.style.display='none';
+    err.style.display='block';
+    err.textContent='NDVI load error: '+e.message+' — upload a JSON file to begin.';
   }
 }
 
-/* file upload for local testing */
-document.getElementById('upload').addEventListener('change', async (e) => {
-  const f = e.target.files[0];
-  if(!f) return;
-  try {
-    const txt = await f.text();
-    const json = JSON.parse(txt);
-    // pass parsed JSON as from-upload payload
-    loadAndRender(json, true);
-  } catch(err) {
-    alert('Invalid JSON file: ' + err.message);
-  }
+document.getElementById('upload').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f) return;
+  try{
+    const txt=await f.text();
+    loadAndRender(JSON.parse(txt),true);
+  } catch(e){alert('Invalid JSON: '+e.message);}
 });
 
-/* CSV download button */
-document.getElementById('downloadCsv').addEventListener('click', ()=>{
-  if(!ndviData || !ndviData.length){ alert('No NDVI data loaded'); return; }
-  const csv = recordsToCsv(ndviData);
-  downloadCsv('kavutiri-ndvi.csv', csv);
+document.getElementById('downloadCsv').addEventListener('click',()=>{
+  if(!ndviData||!ndviData.length){alert('No NDVI data loaded');return;}
+  downloadCsv('kavutiri-ndvi.csv',recordsToCsv(ndviData));
 });
 
-/* Boot: load default path (GitHub Pages relative) */
 loadAndRender(DEFAULT_JSON);
 </script>
 </body>
