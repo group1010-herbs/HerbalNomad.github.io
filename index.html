@@ -1,1174 +1,601 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="description" content="Rustic Garden — Coffee Authority, Land & Water Stewardship, NDVI Intelligence"/>
-<meta name="author" content="Rustic Garden"/>
-<title>Kavutiri Farm — Coffee Authority & Land Intelligence</title>
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-
-<!-- Leaflet & Chart.js -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key & Son — Master Key Cutters, Kawangware, Nairobi</title>
+<meta name="description" content="Key & Son — Two generations of precision key cutting in Kawangware Market, Nairobi. Cut right, first time, every time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ───────────────────────────────────────────────
-   TOKENS & RESET
-──────────────────────────────────────────────── */
-:root{
-  --ink:#0e120d;
-  --parch:#f5f0e8;
-  --cream:#ede7d6;
-  --moss:#2d4a1e;
-  --fern:#3d6b2b;
-  --leaf:#5a8f3c;
-  --sage:#8aad6a;
-  --gold:#c8962a;
-  --amber:#e6b44a;
-  --rust:#8b3a1a;
-  --mist:#d4e4c8;
-  --fog:#e8f0e0;
-  --water:#2a5a6b;
-  --pool:#3a7a8e;
-  --sky:#c4dde8;
-  --text:#1a2415;
-  --muted:#6b7a5e;
-  --card-bg:rgba(245,240,232,0.82);
-  --border:rgba(45,74,30,0.12);
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background:#0e120d;
-  color:var(--text);
-  font-family:'Jost',sans-serif;
-  font-weight:300;
-  overflow-x:hidden;
-}
+  :root {
+    --gold: #D4A017;
+    --gold-light: #F5D77A;
+    --gold-pale: #FDF3D0;
+    --rust: #C0441F;
+    --rust-light: #F0956E;
+    --navy: #1A2744;
+    --navy-deep: #0f1726;
+    --cream: #FDF8EE;
+    --tan: #E8D9B5;
+    --text: #1A2744;
+    --muted: #6B6050;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
 
-/* ───────────────────────────────────────────────
-   GRAIN OVERLAY
-──────────────────────────────────────────────── */
-body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events:none;
-  z-index:9999;
-  opacity:0.4;
-}
+  html { scroll-behavior: smooth; }
 
-/* ───────────────────────────────────────────────
-   HERO
-──────────────────────────────────────────────── */
-.hero{
-  min-height:100svh;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(45,74,30,0.55) 0%, transparent 65%),
-    radial-gradient(ellipse 60% 70% at 85% 20%, rgba(42,90,107,0.3) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, #111a0d 0%, #0e120d 100%);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:48px 24px;
-  position:relative;
-  overflow:hidden;
-}
+  body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
 
-/* animated ring decoration */
-.hero-ring{
-  position:absolute;
-  border-radius:50%;
-  border:1px solid rgba(138,173,106,0.12);
-  animation:ringPulse 8s ease-in-out infinite;
-}
-.hero-ring:nth-child(1){width:420px;height:420px;animation-delay:0s}
-.hero-ring:nth-child(2){width:680px;height:680px;animation-delay:2s}
-.hero-ring:nth-child(3){width:940px;height:940px;animation-delay:4s}
-@keyframes ringPulse{
-  0%,100%{opacity:0.3;transform:scale(1)}
-  50%{opacity:0.6;transform:scale(1.01)}
-}
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 62px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.35rem; color: var(--gold-light);
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; letter-spacing: 0.02em;
+  }
+  .nav-logo svg { flex-shrink: 0; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: #aab0bf; text-decoration: none; font-size: 0.82rem;
+    letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold-light); }
 
-.hero-eyebrow{
-  font-family:'DM Mono',monospace;
-  font-size:11px;
-  letter-spacing:0.25em;
-  text-transform:uppercase;
-  color:var(--sage);
-  margin-bottom:20px;
-  opacity:0;
-  animation:fadeUp 0.9s 0.3s ease forwards;
-}
-.hero h1{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(52px,8vw,104px);
-  font-weight:600;
-  line-height:0.95;
-  color:var(--parch);
-  letter-spacing:-0.02em;
-  opacity:0;
-  animation:fadeUp 1s 0.5s ease forwards;
-}
-.hero h1 em{
-  font-style:italic;
-  color:var(--amber);
-}
-.hero-sub{
-  font-size:clamp(14px,2vw,17px);
-  font-weight:300;
-  color:rgba(213,225,200,0.7);
-  max-width:560px;
-  margin:24px auto 40px;
-  line-height:1.7;
-  opacity:0;
-  animation:fadeUp 1s 0.7s ease forwards;
-}
-.hero-pills{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-  opacity:0;
-  animation:fadeUp 1s 0.9s ease forwards;
-}
-.pill{
-  background:rgba(138,173,106,0.12);
-  border:1px solid rgba(138,173,106,0.25);
-  color:var(--sage);
-  padding:6px 16px;
-  border-radius:999px;
-  font-size:12px;
-  letter-spacing:0.05em;
-  font-family:'DM Mono',monospace;
-}
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    background: var(--navy);
+    min-height: 540px;
+    display: flex; align-items: center;
+    overflow: hidden;
+    padding: 4rem 2rem 4rem 3rem;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 40px,
+      rgba(212,160,23,0.04) 40px, rgba(212,160,23,0.04) 41px
+    );
+  }
+  .hero-key-bg {
+    position: absolute; right: -40px; top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.06; pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 580px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(212,160,23,0.15);
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+  .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 6vw, 4.8rem);
+    color: #fff; line-height: 1.05; margin-bottom: 1.2rem;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero-sub {
+    font-size: 1.05rem; color: #aab0bf;
+    line-height: 1.75; max-width: 490px; margin-bottom: 2rem;
+  }
+  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--gold); color: var(--navy);
+    font-family: var(--font-body); font-weight: 600; font-size: 0.9rem;
+    padding: 13px 28px; border-radius: 6px;
+    text-decoration: none; letter-spacing: 0.03em;
+    border: 2px solid var(--gold); transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-light); border-color: var(--gold-light); }
+  .btn-outline {
+    background: transparent; color: #fff;
+    font-family: var(--font-body); font-weight: 500; font-size: 0.9rem;
+    padding: 13px 28px; border-radius: 6px;
+    text-decoration: none; letter-spacing: 0.03em;
+    border: 2px solid rgba(255,255,255,0.3); transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.7); }
+  .hero-character {
+    position: absolute; right: 8%; bottom: 0;
+    width: 210px; z-index: 2;
+  }
 
-/* scroll cue */
-.scroll-cue{
-  position:absolute;
-  bottom:32px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-  color:rgba(138,173,106,0.5);
-  font-size:10px;
-  letter-spacing:0.2em;
-  text-transform:uppercase;
-  font-family:'DM Mono',monospace;
-  animation:fadeUp 1s 1.4s ease forwards;
-  opacity:0;
-}
-.scroll-cue::after{
-  content:'';
-  width:1px;
-  height:40px;
-  background:linear-gradient(to bottom, rgba(138,173,106,0.5), transparent);
-  animation:lineDrop 2s 1.8s ease-in-out infinite;
-}
-@keyframes lineDrop{
-  0%{transform:scaleY(0);transform-origin:top}
-  50%{transform:scaleY(1);transform-origin:top}
-  51%{transform-origin:bottom}
-  100%{transform:scaleY(0);transform-origin:bottom}
-}
+  /* ── STRIP ── */
+  .strip {
+    background: var(--gold); padding: 0.75rem 2rem;
+    display: flex; align-items: center; justify-content: center;
+    gap: 2.5rem; flex-wrap: wrap; overflow: hidden;
+  }
+  .strip-item {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--navy); font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap;
+  }
+  .strip-dot { color: var(--rust); font-size: 1rem; }
 
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(22px)}
-  to{opacity:1;transform:translateY(0)}
-}
+  /* ── SECTION WRAPPER ── */
+  .section-wrap { padding: 5rem 2rem; max-width: 1080px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--rust); font-weight: 600; margin-bottom: 0.6rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    color: var(--navy); line-height: 1.15; margin-bottom: 1rem;
+  }
+  .section-sub {
+    font-size: 1rem; color: var(--muted); max-width: 540px;
+    line-height: 1.75; margin-bottom: 3rem;
+  }
 
-/* ───────────────────────────────────────────────
-   NAV
-──────────────────────────────────────────────── */
-nav{
-  position:fixed;
-  top:0;left:0;right:0;
-  z-index:100;
-  padding:14px 32px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:rgba(14,18,13,0.7);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid rgba(138,173,106,0.08);
-}
-.nav-logo{
-  font-family:'Cormorant Garamond',serif;
-  font-size:18px;
-  font-weight:600;
-  color:var(--parch);
-  letter-spacing:0.02em;
-}
-.nav-logo span{color:var(--amber)}
-.nav-links{
-  display:flex;
-  gap:28px;
-  list-style:none;
-}
-.nav-links a{
-  font-size:12px;
-  font-family:'DM Mono',monospace;
-  letter-spacing:0.1em;
-  text-transform:uppercase;
-  color:rgba(213,225,200,0.6);
-  text-decoration:none;
-  transition:color 0.2s;
-}
-.nav-links a:hover{color:var(--sage)}
+  /* ── ABOUT ── */
+  .story-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: center;
+  }
+  @media (max-width: 700px) {
+    .story-grid { grid-template-columns: 1fr; }
+    .hero-character { display: none; }
+    .nav-links { display: none; }
+  }
+  .story-visual {
+    position: relative;
+    background: var(--tan); border-radius: 12px;
+    overflow: hidden; min-height: 340px;
+    display: flex; align-items: center; justify-content: center;
+    border: 3px solid var(--navy);
+  }
+  .gen-badge {
+    position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 0.78rem; padding: 8px 20px;
+    border-radius: 8px 8px 0 0; white-space: nowrap;
+  }
 
-/* ───────────────────────────────────────────────
-   SECTION SHELL
-──────────────────────────────────────────────── */
-section{padding:88px 24px}
-.section-inner{max-width:1160px;margin:0 auto}
+  /* ── SERVICES ── */
+  .services-bg { background: var(--navy); }
+  .services-bg .section-title { color: var(--gold-light); }
+  .services-bg .section-sub { color: #7a8eaa; }
+  .services-bg .section-label { color: var(--gold); }
+  .services-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+  .service-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,160,23,0.25);
+    border-radius: 10px; padding: 1.8rem 1.5rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .service-card:hover {
+    border-color: var(--gold);
+    background: rgba(212,160,23,0.08);
+  }
+  .service-icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+  .service-card h3 { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem; }
+  .service-card p { font-size: 0.87rem; color: #7a8eaa; line-height: 1.65; }
 
-.section-label{
-  font-family:'DM Mono',monospace;
-  font-size:10px;
-  letter-spacing:0.3em;
-  text-transform:uppercase;
-  color:var(--sage);
-  margin-bottom:12px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-.section-label::before{
-  content:'';
-  width:32px;height:1px;
-  background:var(--sage);
-  opacity:0.5;
-}
-.section-heading{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(36px,5vw,64px);
-  font-weight:600;
-  line-height:1.05;
-  color:var(--parch);
-  letter-spacing:-0.02em;
-  margin-bottom:20px;
-}
-.section-heading em{font-style:italic;color:var(--amber)}
-.section-body{
-  font-size:16px;
-  line-height:1.8;
-  color:rgba(213,225,200,0.65);
-  max-width:640px;
-}
+  /* ── WHY ── */
+  .why-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2.2rem; margin-top: 2rem;
+  }
+  .why-item { display: flex; gap: 1.2rem; align-items: flex-start; }
+  .why-num {
+    font-family: var(--font-display);
+    font-size: 2.5rem; color: var(--tan); line-height: 1; min-width: 44px;
+  }
+  .why-item h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
+  .why-item p { font-size: 0.87rem; color: var(--muted); line-height: 1.65; }
 
-/* light section */
-.light-section{
-  background:var(--parch);
-}
-.light-section .section-heading{color:var(--ink)}
-.light-section .section-body{color:var(--muted)}
-.light-section .section-label{color:var(--fern)}
-.light-section .section-label::before{background:var(--fern)}
+  /* ── TESTIMONIAL ── */
+  .testimonial-wrap {
+    background: var(--navy);
+    border-left: 5px solid var(--gold);
+    border-radius: 0 10px 10px 0;
+    padding: 2.5rem 2.5rem; position: relative; margin-top: 4rem;
+  }
+  .testimonial-wrap::before {
+    content: '"'; font-family: var(--font-display);
+    font-size: 8rem; color: rgba(212,160,23,0.12);
+    position: absolute; top: -1.2rem; left: 1.5rem; line-height: 1;
+  }
+  .testimonial-wrap blockquote {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 1.15rem; color: #ccc;
+    line-height: 1.75; position: relative; z-index: 1; margin-bottom: 1rem;
+  }
+  .testimonial-author {
+    font-size: 0.85rem; color: var(--gold); font-weight: 600; letter-spacing: 0.05em;
+  }
 
-/* ───────────────────────────────────────────────
-   PHILOSOPHY / IDENTITY BLOCK
-──────────────────────────────────────────────── */
-#about{
-  background:
-    radial-gradient(ellipse 50% 80% at 0% 50%, rgba(45,74,30,0.2), transparent 60%),
-    #0e120d;
-}
-.about-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:64px;
-  align-items:center;
-  margin-top:48px;
-}
-.about-stat{
-  border-left:2px solid var(--amber);
-  padding-left:20px;
-  margin-bottom:32px;
-}
-.about-stat .num{
-  font-family:'Cormorant Garamond',serif;
-  font-size:56px;
-  font-weight:700;
-  color:var(--amber);
-  line-height:1;
-}
-.about-stat .label{
-  font-size:12px;
-  color:var(--muted);
-  font-family:'DM Mono',monospace;
-  letter-spacing:0.1em;
-  text-transform:uppercase;
-  margin-top:4px;
-}
-.about-quote{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(22px,3vw,32px);
-  font-style:italic;
-  color:var(--parch);
-  line-height:1.45;
-  opacity:0.85;
-}
+  /* ── CONTACT ── */
+  .contact-bg { background: var(--rust); }
+  .contact-inner {
+    max-width: 1080px; margin: 0 auto; padding: 5rem 2rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start;
+  }
+  @media (max-width: 700px) { .contact-inner { grid-template-columns: 1fr; } }
+  .contact-inner .section-label { color: rgba(255,255,255,0.6); }
+  .contact-inner .section-title { color: #fff; }
+  .contact-inner .section-sub { color: rgba(255,255,255,0.75); margin-bottom: 2rem; }
+  .contact-list { list-style: none; display: flex; flex-direction: column; gap: 1.2rem; }
+  .contact-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .contact-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .contact-list .label {
+    font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.55); font-weight: 600; margin-bottom: 2px;
+  }
+  .contact-list a, .contact-list span {
+    color: #fff; font-size: 0.97rem; text-decoration: none; font-weight: 500;
+  }
+  .contact-list a:hover { text-decoration: underline; }
 
-@media(max-width:760px){
-  .about-grid{grid-template-columns:1fr;gap:32px}
-}
+  .hours-card {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px; padding: 1.5rem;
+  }
+  .hours-card h4 {
+    font-family: var(--font-display);
+    font-size: 1.1rem; color: var(--gold-light); margin-bottom: 1rem;
+  }
+  .hours-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.88rem;
+  }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-row .day { color: rgba(255,255,255,0.65); }
+  .hours-row .time { color: #fff; font-weight: 500; }
+  .open-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(52,200,100,0.2); border: 1px solid rgba(52,200,100,0.4);
+    color: #7ee8a2; font-size: 0.72rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px; margin-top: 1rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .open-badge .green-dot { width: 6px; height: 6px; border-radius: 50%; background: #7ee8a2; }
 
-/* ───────────────────────────────────────────────
-   FOLIAR / INPUTS CARDS
-──────────────────────────────────────────────── */
-#foliar{
-  background:linear-gradient(170deg, #111a0d 0%, #0c1a10 100%);
-}
-.foliar-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:16px;
-  margin-top:48px;
-}
-.foliar-card{
-  background:rgba(45,74,30,0.15);
-  border:1px solid rgba(90,143,60,0.2);
-  border-radius:16px;
-  padding:28px 24px;
-  transition:transform 0.3s, background 0.3s, border-color 0.3s;
-  position:relative;
-  overflow:hidden;
-}
-.foliar-card::before{
-  content:'';
-  position:absolute;
-  top:-30px;right:-30px;
-  width:100px;height:100px;
-  border-radius:50%;
-  background:radial-gradient(circle, rgba(138,173,106,0.1), transparent 70%);
-  pointer-events:none;
-}
-.foliar-card:hover{
-  transform:translateY(-4px);
-  background:rgba(45,74,30,0.25);
-  border-color:rgba(90,143,60,0.4);
-}
-.foliar-icon{
-  font-size:32px;
-  margin-bottom:14px;
-  display:block;
-}
-.foliar-name{
-  font-family:'Cormorant Garamond',serif;
-  font-size:22px;
-  font-weight:600;
-  color:var(--parch);
-  margin-bottom:8px;
-}
-.foliar-sci{
-  font-family:'DM Mono',monospace;
-  font-size:10px;
-  color:var(--sage);
-  letter-spacing:0.12em;
-  margin-bottom:12px;
-  text-transform:uppercase;
-}
-.foliar-desc{
-  font-size:13px;
-  line-height:1.7;
-  color:rgba(213,225,200,0.6);
-}
-
-/* ───────────────────────────────────────────────
-   WATER & FISH
-──────────────────────────────────────────────── */
-#water{
-  background:
-    radial-gradient(ellipse 60% 80% at 100% 30%, rgba(42,90,107,0.2), transparent 60%),
-    #0e120d;
-}
-.water-layout{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:48px;
-  align-items:start;
-  margin-top:48px;
-}
-.water-panel{
-  background:rgba(42,90,107,0.12);
-  border:1px solid rgba(42,90,107,0.25);
-  border-radius:16px;
-  padding:32px;
-}
-.water-panel-title{
-  font-family:'Cormorant Garamond',serif;
-  font-size:26px;
-  font-weight:600;
-  color:var(--sky);
-  margin-bottom:14px;
-}
-.water-panel p{
-  font-size:14px;
-  line-height:1.8;
-  color:rgba(196,221,232,0.7);
-}
-.fish-tag{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  background:rgba(42,90,107,0.25);
-  border:1px solid rgba(42,90,107,0.4);
-  color:var(--sky);
-  padding:5px 12px;
-  border-radius:999px;
-  font-size:12px;
-  font-family:'DM Mono',monospace;
-  margin:4px;
-}
-.tag-row{margin-top:16px;display:flex;flex-wrap:wrap}
-@media(max-width:760px){
-  .water-layout{grid-template-columns:1fr}
-}
-
-/* ───────────────────────────────────────────────
-   RESEARCH THESIS BLOCK (from PDF)
-──────────────────────────────────────────────── */
-#thesis{
-  background:var(--cream);
-}
-.thesis-box{
-  background:#fff;
-  border-left:4px solid var(--moss);
-  border-radius:0 12px 12px 0;
-  padding:28px 32px;
-  margin-top:40px;
-  box-shadow:0 4px 24px rgba(14,18,13,0.08);
-}
-.thesis-box p{
-  font-family:'Cormorant Garamond',serif;
-  font-size:20px;
-  line-height:1.7;
-  color:var(--ink);
-  font-style:italic;
-}
-.thesis-stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
-  margin-top:32px;
-}
-.t-stat{
-  text-align:center;
-  padding:24px;
-  background:var(--fog);
-  border-radius:12px;
-  border:1px solid var(--border);
-}
-.t-stat .n{
-  font-family:'Cormorant Garamond',serif;
-  font-size:42px;
-  font-weight:700;
-  color:var(--moss);
-  line-height:1;
-}
-.t-stat .u{font-size:18px;color:var(--gold)}
-.t-stat .d{
-  font-size:12px;
-  color:var(--muted);
-  font-family:'DM Mono',monospace;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-  margin-top:6px;
-}
-@media(max-width:600px){
-  .thesis-stats{grid-template-columns:1fr}
-}
-
-/* ───────────────────────────────────────────────
-   NDVI DASHBOARD
-──────────────────────────────────────────────── */
-#ndvi{
-  background:linear-gradient(180deg,#071122 0%,#0b1630 100%);
-}
-.ndvi-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:wrap;
-  gap:16px;
-  margin-bottom:24px;
-}
-.ndvi-controls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.ndvi-btn{
-  background:rgba(6,182,212,0.15);
-  border:1px solid rgba(6,182,212,0.3);
-  color:#06b6d4;
-  padding:8px 14px;
-  border-radius:8px;
-  cursor:pointer;
-  font-family:'DM Mono',monospace;
-  font-size:12px;
-  transition:all 0.2s;
-}
-.ndvi-btn:hover{background:rgba(6,182,212,0.28)}
-.ndvi-btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.08);color:rgba(148,163,184,0.8)}
-
-.ndvi-card{
-  background:rgba(11,18,32,0.85);
-  border:1px solid rgba(6,182,212,0.1);
-  border-radius:14px;
-  padding:16px;
-}
-.ndvi-grid{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:16px;
-  margin-top:16px;
-}
-canvas{width:100%;height:260px;border-radius:10px;padding:8px}
-#map{height:360px;border-radius:10px;margin-top:8px}
-#stats{
-  margin-top:10px;
-  color:#bfeff7;
-  font-family:'DM Mono',monospace;
-  font-size:12px;
-  letter-spacing:0.05em;
-}
-.ndvi-loader{padding:24px;text-align:center;color:rgba(148,163,184,0.7);font-family:'DM Mono',monospace;font-size:13px}
-.ndvi-error{color:#ff8a8a;padding:12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px}
-
-@media(max-width:860px){
-  .ndvi-grid{grid-template-columns:1fr}
-  canvas{height:200px}
-  #map{height:260px}
-}
-
-/* ───────────────────────────────────────────────
-   PILLARS
-──────────────────────────────────────────────── */
-#pillars{background:#0e120d}
-.pillars-list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:16px;
-  margin-top:48px;
-}
-.pillar-item{
-  padding:28px 24px;
-  border:1px solid rgba(200,150,42,0.18);
-  border-radius:14px;
-  background:rgba(200,150,42,0.04);
-  transition:border-color 0.3s, background 0.3s;
-}
-.pillar-item:hover{
-  border-color:rgba(200,150,42,0.45);
-  background:rgba(200,150,42,0.08);
-}
-.pillar-num{
-  font-family:'DM Mono',monospace;
-  font-size:11px;
-  color:var(--amber);
-  letter-spacing:0.15em;
-  margin-bottom:14px;
-}
-.pillar-title{
-  font-family:'Cormorant Garamond',serif;
-  font-size:20px;
-  font-weight:600;
-  color:var(--parch);
-  margin-bottom:10px;
-}
-.pillar-body{
-  font-size:13px;
-  line-height:1.75;
-  color:rgba(213,225,200,0.6);
-}
-
-/* ───────────────────────────────────────────────
-   FOOTER
-──────────────────────────────────────────────── */
-footer{
-  background:#070d06;
-  border-top:1px solid rgba(138,173,106,0.08);
-  padding:48px 24px 32px;
-  text-align:center;
-}
-.footer-logo{
-  font-family:'Cormorant Garamond',serif;
-  font-size:28px;
-  font-weight:600;
-  color:var(--parch);
-  margin-bottom:8px;
-}
-.footer-logo span{color:var(--amber)}
-.footer-tagline{
-  font-size:12px;
-  font-family:'DM Mono',monospace;
-  color:var(--muted);
-  letter-spacing:0.12em;
-  text-transform:uppercase;
-  margin-bottom:24px;
-}
-.footer-links{
-  display:flex;
-  justify-content:center;
-  gap:24px;
-  flex-wrap:wrap;
-  margin-bottom:32px;
-}
-.footer-links a{
-  font-size:11px;
-  font-family:'DM Mono',monospace;
-  color:var(--muted);
-  text-decoration:none;
-  letter-spacing:0.1em;
-  text-transform:uppercase;
-  transition:color 0.2s;
-}
-.footer-links a:hover{color:var(--sage)}
-.footer-copy{
-  font-size:11px;
-  color:rgba(107,122,94,0.5);
-  font-family:'DM Mono',monospace;
-}
-
-/* ───────────────────────────────────────────────
-   SCROLL REVEAL
-──────────────────────────────────────────────── */
-.reveal{
-  opacity:0;
-  transform:translateY(28px);
-  transition:opacity 0.8s ease, transform 0.8s ease;
-}
-.reveal.visible{opacity:1;transform:none}
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy-deep); padding: 2rem 2rem; text-align: center;
+    color: #445; font-size: 0.78rem; letter-spacing: 0.04em;
+  }
+  footer span { color: var(--gold); }
 </style>
 </head>
-
 <body>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Kavutiri <span>Farm</span></div>
+  <a class="nav-logo" href="#">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7.5" cy="15.5" r="4.5"/>
+      <path d="M11.5 15.5H21l-1.5-3-3.5-3.5-2 4.5h-2.5"/>
+    </svg>
+    Key &amp; Son
+  </a>
   <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#foliar">Foliar</a></li>
-    <li><a href="#water">Water</a></li>
-    <li><a href="#thesis">Research</a></li>
-    <li><a href="#ndvi">NDVI</a></li>
-    <li><a href="#pillars">Pillars</a></li>
+    <li><a href="#about">Our Story</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#contact">Find Us</a></li>
   </ul>
 </nav>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-ring"></div>
-  <div class="hero-ring"></div>
-  <div class="hero-ring"></div>
-  <div class="hero-eyebrow">Kavutiri Farm · Kirinyaga County, Kenya</div>
-  <h1>Coffee <em>Authority</em><br>Land Intelligence</h1>
-  <p class="hero-sub">
-    From the slopes of Mount Kenya — precision agronomy, biogenic foliar science,
-    integrated water stewardship, and living NDVI intelligence for every plot we tend.
-  </p>
-  <div class="hero-pills">
-    <span class="pill">☕ Specialty Arabica</span>
-    <span class="pill">🌿 Foliar Biogenics</span>
-    <span class="pill">🐟 Aquaponics</span>
-    <span class="pill">💧 Water Management</span>
-    <span class="pill">📡 NDVI Monitoring</span>
-  </div>
-  <div class="scroll-cue">Scroll</div>
-</section>
+<div class="hero">
+  <div class="hero-bg"></div>
+  <svg class="hero-key-bg" width="520" height="520" viewBox="0 0 200 200">
+    <circle cx="60" cy="60" r="42" stroke="white" stroke-width="10" fill="none"/>
+    <circle cx="60" cy="60" r="22" stroke="white" stroke-width="8" fill="none"/>
+    <rect x="97" y="54" width="92" height="13" rx="3" fill="white"/>
+    <rect x="168" y="67" width="13" height="22" rx="2" fill="white"/>
+    <rect x="148" y="67" width="13" height="16" rx="2" fill="white"/>
+  </svg>
 
-<!-- ABOUT -->
-<section id="about">
-  <div class="section-inner">
-    <div class="section-label">Who We Are</div>
-    <h2 class="section-heading">A <em>living</em> system,<br>not just a farm</h2>
-    <div class="about-grid reveal">
-      <div>
-        <div class="about-stat">
-          <div class="num">1908</div>
-          <div class="label">Year Kenya's coffee research tradition began</div>
-        </div>
-        <div class="about-stat">
-          <div class="num">105K</div>
-          <div class="label">Hectares of stable coffee land in Kenya</div>
-        </div>
-        <div class="about-stat">
-          <div class="num">SL28/34</div>
-          <div class="label">World-premium varieties we steward</div>
-        </div>
-      </div>
-      <div>
-        <p class="about-quote">
-          "Productive farming systems are ultimately social and institutional systems
-          before they are technical systems."
-        </p>
-        <p style="margin-top:24px;font-size:14px;line-height:1.85;color:rgba(213,225,200,0.6)">
-          Kavutiri Farm integrates the institutional wisdom of Kenya's Ruiru Knowledge Network
-          with cutting-edge satellite NDVI monitoring, biogenic foliar production, and
-          aquaponic nutrient cycling. We treat our land as a closed-loop ecosystem where
-          every element — plant, fish, water, microbe — feeds the next.
-        </p>
-      </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Second Generation &middot; Kawangware, Nairobi
     </div>
-  </div>
-</section>
-
-<!-- FOLIAR BIOGENICS -->
-<section id="foliar">
-  <div class="section-inner">
-    <div class="section-label">Foliar Biogenics</div>
-    <h2 class="section-heading">We brew our own<br><em>plant intelligence</em></h2>
-    <p class="section-body">
-      Every foliar application at Kavutiri is crafted on-farm from medicinal and functional
-      plants grown in our living buffer zones. No synthetic chemistry — only phytochemical
-      precision validated by observable plant response.
+    <h1>Every Key,<br><span>Cut Right</span><br>First Time.</h1>
+    <p class="hero-sub">
+      Two generations of precision key cutting, roadside in Kawangware Market. The father taught the son. The son carries on. No second trips — ever.
     </p>
-    <div class="foliar-grid reveal">
-
-      <div class="foliar-card">
-        <span class="foliar-icon">🌳</span>
-        <div class="foliar-name">Warburgia</div>
-        <div class="foliar-sci">Warburgia ugandensis</div>
-        <p class="foliar-desc">
-          East African pepper-bark tree. Rich in sesquiterpene dialdehyde compounds
-          with powerful antifungal and antibacterial action. Our extracts suppress
-          coffee berry disease (CBD) fungal pressure when applied at canopy closure.
-          Also serves as an insect deterrent via volatile compound emission.
-        </p>
-      </div>
-
-      <div class="foliar-card">
-        <span class="foliar-icon">🌵</span>
-        <div class="foliar-name">Aloe Vera</div>
-        <div class="foliar-sci">Aloe barbadensis miller</div>
-        <p class="foliar-desc">
-          Our aloe extract serves as a natural biostimulant carrier and surfactant.
-          The mucilage coats leaf surfaces, prolonging active-ingredient contact time.
-          Salicylic acid precursors in aloe activate plant systemic resistance (SAR),
-          priming the coffee tree to defend itself before pathogen arrival.
-        </p>
-      </div>
-
-      <div class="foliar-card">
-        <span class="foliar-icon">🌸</span>
-        <div class="foliar-name">Cape Periwinkle</div>
-        <div class="foliar-sci">Catharanthus roseus</div>
-        <p class="foliar-desc">
-          Source of alkaloids including vindoline and catharanthine. Used in our
-          foliar blend as a natural nematocide and growth modulator. Inter-planted
-          throughout our orchard as a living mulch that also suppresses soil-borne
-          nematode populations between fertigated rows.
-        </p>
-      </div>
-
-      <div class="foliar-card">
-        <span class="foliar-icon">🔬</span>
-        <div class="foliar-name">Blend Protocol</div>
-        <div class="foliar-sci">Kavutiri Brew Method</div>
-        <p class="foliar-desc">
-          Plant material is cold-macerated for 48 hours, then warm-fermented for
-          72 hours with activated EM (effective microorganisms). The resulting
-          extract is diluted to field concentration, pH-adjusted to 6.2–6.5,
-          and applied early morning during berry development and flowering stages.
-        </p>
-      </div>
-
+    <div class="hero-cta">
+      <a href="#services" class="btn-primary">Our Services</a>
+      <a href="#contact" class="btn-outline">Find Us</a>
     </div>
   </div>
-</section>
 
-<!-- WATER & FISH -->
-<section id="water">
-  <div class="section-inner">
-    <div class="section-label">Water & Aquaponics</div>
-    <h2 class="section-heading"><em>Fish</em> feed<br>our coffee trees</h2>
-    <p class="section-body" style="color:rgba(196,221,232,0.65)">
-      Freshwater fish ponds are integrated into our irrigation system, transforming
-      water management from a delivery function into a nutrient cycling engine.
-    </p>
-    <div class="water-layout reveal">
+  <!-- Straw hat character -->
+  <div class="hero-character">
+    <svg width="200" height="300" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="100" cy="85" rx="65" ry="16" fill="#D4A017"/>
+      <ellipse cx="100" cy="80" rx="40" ry="30" fill="#E8B820"/>
+      <ellipse cx="100" cy="85" rx="65" ry="16" fill="none" stroke="#A07810" stroke-width="2"/>
+      <path d="M62 85 Q100 92 138 85" stroke="#A07810" stroke-width="2" fill="none"/>
+      <path d="M68 82 Q100 88 132 82" stroke="#C0441F" stroke-width="4" fill="none"/>
+      <ellipse cx="100" cy="115" rx="28" ry="30" fill="#F5C99A"/>
+      <ellipse cx="90" cy="112" rx="4" ry="4.5" fill="#1A2744"/>
+      <ellipse cx="110" cy="112" rx="4" ry="4.5" fill="#1A2744"/>
+      <circle cx="91.5" cy="111" r="1.5" fill="white"/>
+      <circle cx="111.5" cy="111" r="1.5" fill="white"/>
+      <path d="M86 124 Q100 135 114 124" stroke="#1A2744" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M90 126 Q100 133 110 126" stroke="white" stroke-width="1.5" fill="none"/>
+      <rect x="92" y="143" width="16" height="14" fill="#F5C99A"/>
+      <path d="M60 158 Q100 150 140 158 L148 240 Q100 248 52 240Z" fill="#2A6496"/>
+      <path d="M85 158 L100 175 L115 158" stroke="white" stroke-width="2" fill="none"/>
+      <path d="M60 162 Q35 180 30 210" stroke="#2A6496" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <path d="M140 162 Q165 180 170 210" stroke="#2A6496" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <ellipse cx="29" cy="215" rx="12" ry="12" fill="#F5C99A"/>
+      <ellipse cx="171" cy="215" rx="12" ry="12" fill="#F5C99A"/>
+      <circle cx="178" cy="207" r="8" stroke="#D4A017" stroke-width="3" fill="none"/>
+      <circle cx="178" cy="207" r="3" fill="#D4A017"/>
+      <line x1="186" y1="207" x2="200" y2="207" stroke="#D4A017" stroke-width="3"/>
+      <line x1="196" y1="207" x2="196" y2="213" stroke="#D4A017" stroke-width="3"/>
+      <line x1="200" y1="207" x2="200" y2="214" stroke="#D4A017" stroke-width="3"/>
+      <path d="M68 238 L62 290 L82 292 L100 260 L118 292 L138 290 L132 238Z" fill="#1A2744"/>
+      <ellipse cx="69" cy="291" rx="14" ry="7" fill="#2a1a0a"/>
+      <ellipse cx="131" cy="291" rx="14" ry="7" fill="#2a1a0a"/>
+    </svg>
+  </div>
+</div>
+
+<!-- TICKER STRIP -->
+<div class="strip">
+  <div class="strip-item"><span class="strip-dot">✦</span> House &amp; Gate Keys</div>
+  <div class="strip-item"><span class="strip-dot">✦</span> Car Key Duplication</div>
+  <div class="strip-item"><span class="strip-dot">✦</span> Padlocks &amp; Deadbolts</div>
+  <div class="strip-item"><span class="strip-dot">✦</span> Ready While You Wait</div>
+  <div class="strip-item"><span class="strip-dot">✦</span> Right First Time, Always</div>
+</div>
+
+<!-- ABOUT / STORY -->
+<div id="about">
+  <div class="section-wrap">
+    <div class="story-grid">
       <div>
-        <div class="water-panel" style="margin-bottom:16px">
-          <div class="water-panel-title">💧 Integrated Irrigation</div>
-          <p>
-            Following the breakdown patterns identified in Kenya's national irrigation scholarship,
-            Kavutiri operates a gravity-fed micro-scheme with timed delivery matching
-            critical phenological windows: flowering (water stress avoided), berry swelling
-            (peak demand), and post-harvest (minimum input). Scheduling is cross-referenced
-            against live NDVI stress signals from our satellite feed.
-          </p>
-        </div>
-        <div class="water-panel">
-          <div class="water-panel-title">🌊 Water Stewardship</div>
-          <p>
-            We capture hillside runoff in lined retention ponds, reducing erosion while
-            building a reserve buffer for dry-spell supplementary irrigation. All
-            drainage is filtered through vetiver grass terraces before re-entering
-            watercourses — a closed-loop that protects downstream ecologies.
-          </p>
-        </div>
+        <div class="section-label">Our Story</div>
+        <h2 class="section-title">Two Generations,<br>One Craft.</h2>
+        <p class="section-sub">
+          What started with a father cutting keys by the roadside in Kawangware became a legacy. Today, his son carries on — same spot, same precision, same promise. The machines are better. The craft is the same.
+        </p>
+        <p style="color: var(--muted); font-size: 0.92rem; line-height: 1.8;">
+          You won't come back because the key didn't work. That's not how Key &amp; Son operates. Every key is tested before it leaves our hands — and between father and son, we've seen every lock, every blank, every tricky car chip.
+        </p>
       </div>
-      <div class="water-panel">
-        <div class="water-panel-title">🐟 Fish for Coffee</div>
-        <p style="margin-bottom:16px">
-          Our tilapia and catfish ponds are positioned uphill of the coffee rows.
-          Nutrient-rich pond water — loaded with fish excreta (ammonia converted
-          to bioavailable nitrate by nitrifying bacteria) — is timed into drip
-          fertigation lines at weekly intervals during the growing season.
-        </p>
-        <p style="margin-bottom:16px">
-          This delivers a slow-release nitrogen source without the salt-loading
-          risk of synthetic fertilisers, while the fish consume plant debris
-          introduced to the pond from pruning operations — closing the loop.
-        </p>
-        <div class="tag-row">
-          <span class="fish-tag">🐟 Nile Tilapia</span>
-          <span class="fish-tag">🐠 Catfish</span>
-          <span class="fish-tag">♻️ EM Bacteria</span>
-          <span class="fish-tag">💧 Drip Fertigation</span>
-          <span class="fish-tag">🌾 Vetiver Filter</span>
-        </div>
+      <div class="story-visual">
+        <svg width="280" height="280" viewBox="0 0 280 280" fill="none">
+          <rect x="20" y="180" width="240" height="15" rx="3" fill="#8B6A3E" opacity="0.6"/>
+          <rect x="80" y="110" width="120" height="70" rx="8" fill="#1A2744" opacity="0.85"/>
+          <rect x="90" y="120" width="100" height="50" rx="4" fill="#2A3F6A"/>
+          <circle cx="140" cy="145" r="18" fill="#D4A017" opacity="0.7"/>
+          <circle cx="140" cy="145" r="10" fill="#A07810" opacity="0.9"/>
+          <g transform="translate(40,150) rotate(-15)">
+            <circle cx="0" cy="0" r="9" stroke="#D4A017" stroke-width="3" fill="none"/>
+            <circle cx="0" cy="0" r="3.5" fill="#D4A017"/>
+            <line x1="9" y1="0" x2="38" y2="0" stroke="#D4A017" stroke-width="3"/>
+            <line x1="28" y1="0" x2="28" y2="7" stroke="#D4A017" stroke-width="3"/>
+            <line x1="36" y1="0" x2="36" y2="8" stroke="#D4A017" stroke-width="3"/>
+          </g>
+          <g transform="translate(180,155) rotate(10)">
+            <circle cx="0" cy="0" r="9" stroke="#C0441F" stroke-width="3" fill="none"/>
+            <circle cx="0" cy="0" r="3.5" fill="#C0441F"/>
+            <line x1="9" y1="0" x2="40" y2="0" stroke="#C0441F" stroke-width="3"/>
+            <line x1="22" y1="0" x2="22" y2="6" stroke="#C0441F" stroke-width="3"/>
+            <line x1="32" y1="0" x2="32" y2="9" stroke="#C0441F" stroke-width="3"/>
+            <line x1="39" y1="0" x2="39" y2="6" stroke="#C0441F" stroke-width="3"/>
+          </g>
+          <circle cx="140" cy="145" r="40" stroke="#D4A017" stroke-width="1" stroke-dasharray="4 6" opacity="0.3"/>
+          <!-- Father -->
+          <circle cx="55" cy="75" r="14" fill="#F5C99A"/>
+          <rect x="44" y="89" width="22" height="35" rx="4" fill="#2A3F6A"/>
+          <line x1="44" y1="96" x2="32" y2="120" stroke="#2A3F6A" stroke-width="8" stroke-linecap="round"/>
+          <line x1="66" y1="96" x2="78" y2="115" stroke="#2A3F6A" stroke-width="8" stroke-linecap="round"/>
+          <ellipse cx="55" cy="63" rx="18" ry="6" fill="#1A2744"/>
+          <rect x="42" y="60" width="26" height="10" rx="5" fill="#1A2744"/>
+          <!-- Son -->
+          <circle cx="210" cy="80" r="13" fill="#F5C99A"/>
+          <rect x="200" y="93" width="20" height="32" rx="4" fill="#C0441F"/>
+          <line x1="200" y1="100" x2="190" y2="122" stroke="#C0441F" stroke-width="7" stroke-linecap="round"/>
+          <line x1="220" y1="100" x2="232" y2="118" stroke="#C0441F" stroke-width="7" stroke-linecap="round"/>
+          <!-- Straw hat on son -->
+          <ellipse cx="210" cy="70" rx="22" ry="7" fill="#D4A017"/>
+          <ellipse cx="210" cy="66" rx="13" ry="11" fill="#E8B820"/>
+          <ellipse cx="210" cy="70" rx="22" ry="7" fill="none" stroke="#A07810" stroke-width="1.5"/>
+          <path d="M195 69 Q210 74 225 69" stroke="#C0441F" stroke-width="2.5" fill="none"/>
+          <path d="M85 100 Q140 50 190 85" stroke="#D4A017" stroke-width="2" stroke-dasharray="5 4" fill="none" opacity="0.5"/>
+        </svg>
+        <div class="gen-badge">Father ✦ Son · Kawangware</div>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- THESIS / RESEARCH CONTEXT -->
-<section id="thesis" class="light-section">
-  <div class="section-inner">
-    <div class="section-label">Research Context</div>
-    <h2 class="section-heading" style="color:var(--ink)">The <em style="color:var(--rust)">institutional</em><br>case for Kavutiri</h2>
-
-    <div class="thesis-box reveal">
-      <p>
-        "Kenya's coffee production decline since 1988 is not agronomic in origin. It is institutional:
-        the withdrawal of state extension investment dismantled the knowledge-transfer architecture
-        that is essential for farmer behaviour change."
-      </p>
-      <p style="margin-top:16px;font-family:'Jost',sans-serif;font-size:14px;font-style:normal;color:var(--muted)">
-        — Gitari, D.M. (2025). <em>Irrigation Failure as Institutional Breakdown</em>. ALR6110.
-      </p>
-    </div>
-
-    <div class="thesis-stats reveal">
-      <div class="t-stat">
-        <div class="n">130<span class="u">K</span></div>
-        <div class="d">MT coffee peak (1988)</div>
+<!-- SERVICES -->
+<div class="services-bg" id="services">
+  <div class="section-wrap">
+    <div class="section-label">What We Do</div>
+    <h2 class="section-title">Our Services</h2>
+    <p class="section-sub">We keep it focused so we keep it perfect. Bring us your key problem — we've seen it before.</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <span class="service-icon">🏠</span>
+        <h3>House &amp; Apartment Keys</h3>
+        <p>All standard blanks, security keys, and gate keys. Tested before you leave — every time.</p>
       </div>
-      <div class="t-stat">
-        <div class="n">34<span class="u">K</span></div>
-        <div class="d">MT by 2020/21</div>
+      <div class="service-card">
+        <span class="service-icon">🚗</span>
+        <h3>Car Key Duplication</h3>
+        <p>Standard and transponder keys for most makes and models. Honest advice if we can't — no guessing.</p>
       </div>
-      <div class="t-stat">
-        <div class="n">13<span class="u">:1</span></div>
-        <div class="d">ROI on extension rebuilding</div>
+      <div class="service-card">
+        <span class="service-icon">🔒</span>
+        <h3>Padlocks &amp; Deadbolts</h3>
+        <p>Padlock re-keying, duplicate keys for padlocks, deadbolts and security locks of all kinds.</p>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">⚡</span>
+        <h3>Ready While You Wait</h3>
+        <p>Most cuts done in minutes. No appointment needed. Walk up, we cut, you go. Simple.</p>
       </div>
     </div>
-
-    <p style="margin-top:32px;font-size:15px;line-height:1.85;color:var(--muted);max-width:700px">
-      Kavutiri exists as a living proof-of-concept for the five-pillar reconstruction thesis:
-      demonstration farming, continuous advisory presence, spaced-repetition knowledge sharing,
-      feedback loops to research, and premium market integration. We are not waiting for
-      national policy to rebuild the extension network — we are doing it at farm scale.
-    </p>
   </div>
-</section>
+</div>
 
-<!-- NDVI DASHBOARD -->
-<section id="ndvi">
-  <div class="section-inner">
-    <div class="ndvi-header">
-      <div>
-        <div class="section-label">Satellite Intelligence</div>
-        <h2 class="section-heading" style="font-size:clamp(28px,4vw,48px);margin-bottom:0">NDVI <em>Timeline</em></h2>
-        <p style="font-size:13px;font-family:'DM Mono',monospace;color:rgba(148,163,184,0.6);margin-top:4px">
-          Upload your JSON · Click map markers · Hover the chart
-        </p>
+<!-- WHY US -->
+<div id="why">
+  <div class="section-wrap">
+    <div class="section-label">Why Key &amp; Son</div>
+    <h2 class="section-title">Cut Right,<br>Every Single Time.</h2>
+    <div class="why-grid">
+      <div class="why-item">
+        <span class="why-num">01</span>
+        <div>
+          <h4>Generational expertise</h4>
+          <p>Our hands have cut thousands of keys. The son learned from the father — no shortcuts, no guesswork.</p>
+        </div>
       </div>
-      <div class="ndvi-controls">
-        <label for="upload" style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(148,163,184,0.7);letter-spacing:0.08em;cursor:pointer">
-          Upload JSON
-          <input id="upload" type="file" accept="application/json" style="display:none"/>
-        </label>
-        <button id="downloadCsv" class="ndvi-btn secondary">↓ CSV</button>
+      <div class="why-item">
+        <span class="why-num">02</span>
+        <div>
+          <h4>Proper machinery</h4>
+          <p>Small setup, serious equipment. Quality cutting machines mean accurate keys — consistently.</p>
+        </div>
+      </div>
+      <div class="why-item">
+        <span class="why-num">03</span>
+        <div>
+          <h4>One-trip guarantee</h4>
+          <p>We test every key before you leave. If it doesn't work, we fix it — no extra charge, no argument.</p>
+        </div>
+      </div>
+      <div class="why-item">
+        <span class="why-num">04</span>
+        <div>
+          <h4>No fuss, no office</h4>
+          <p>Roadside at Kawangware Market. Walk up anytime. Fair prices. Two generations of trust.</p>
+        </div>
       </div>
     </div>
 
-    <div id="ndvi-loader" class="ndvi-card ndvi-loader">Loading NDVI data…</div>
+    <div class="testimonial-wrap">
+      <blockquote>
+        His father cut my dad's keys. Now he cuts mine. First try, every time. That's not luck — that's a family that actually knows their craft.
+      </blockquote>
+      <div class="testimonial-author">— A Regular Customer, Returning for Over 20 Years</div>
+    </div>
+  </div>
+</div>
 
-    <div id="ndvi-dashboard" style="display:none">
-      <div class="ndvi-card">
-        <div class="ndvi-grid">
+<!-- CONTACT / FIND US -->
+<div class="contact-bg" id="contact">
+  <div class="contact-inner">
+    <div>
+      <div class="section-label">Find Us</div>
+      <h2 class="section-title" style="color:#fff;">Come Say Hello.</h2>
+      <p class="section-sub">We're at Kawangware Market, Nairobi. Look for the straw hat and the key machine. No appointment needed.</p>
+
+      <ul class="contact-list">
+        <li>
+          <div class="contact-icon">📍</div>
           <div>
-            <canvas id="ndviChart"></canvas>
-            <div id="stats">—</div>
+            <div class="label">Location</div>
+            <span>Kawangware Market, Nairobi, Kenya</span>
           </div>
-          <div class="ndvi-card" style="padding:10px">
-            <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(148,163,184,0.5);letter-spacing:0.1em;margin-bottom:6px">MAP VIEW</div>
-            <div id="map"></div>
+        </li>
+        <li>
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="label">Phone / WhatsApp</div>
+            <a href="tel:+254794112395">+254 794 112 395</a>
           </div>
+        </li>
+        <li>
+          <div class="contact-icon">✉️</div>
+          <div>
+            <div class="label">Email</div>
+            <a href="mailto:denomwash40@gmail.com">denomwash40@gmail.com</a>
+          </div>
+        </li>
+      </ul>
+
+      <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="tel:+254794112395" class="btn-primary">Call Us Now</a>
+        <a href="https://wa.me/254794112395" class="btn-outline" style="color:white;">WhatsApp</a>
+      </div>
+    </div>
+
+    <div>
+      <div class="hours-card">
+        <h4>Opening Hours</h4>
+        <div class="hours-row">
+          <span class="day">Monday – Friday</span>
+          <span class="time">8:00 am – 6:00 pm</span>
+        </div>
+        <div class="hours-row">
+          <span class="day">Saturday</span>
+          <span class="time">8:00 am – 5:00 pm</span>
+        </div>
+        <div class="hours-row">
+          <span class="day">Sunday</span>
+          <span class="time">10:00 am – 3:00 pm</span>
+        </div>
+        <div class="open-badge">
+          <span class="green-dot"></span> Walk-ins always welcome
         </div>
       </div>
-    </div>
 
-    <div id="ndvi-error" style="display:none" class="ndvi-card ndvi-error"></div>
-  </div>
-</section>
-
-<!-- PILLARS -->
-<section id="pillars">
-  <div class="section-inner">
-    <div class="section-label">Reconstruction Programme</div>
-    <h2 class="section-heading">Five <em>pillars</em><br>at farm scale</h2>
-    <p class="section-body">
-      Drawing directly from the Ruiru Knowledge Network's 1956–57 operational model,
-      Kavutiri implements all five pillars identified by current research as essential
-      for sustained coffee productivity.
-    </p>
-    <div class="pillars-list reveal">
-
-      <div class="pillar-item">
-        <div class="pillar-num">01 ·</div>
-        <div class="pillar-title">Advisory Presence</div>
-        <p class="pillar-body">
-          Continuous on-farm advisory visits — mirroring the district-resident officer
-          model — with structured observation protocols and direct farmer dialogue.
+      <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 10px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.15);">
+        <p style="color: rgba(255,255,255,0.6); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 0.6rem;">Getting Here</p>
+        <p style="color: rgba(255,255,255,0.85); font-size: 0.9rem; line-height: 1.7;">
+          We're based at Kawangware Market, Nairobi — a well-known spot in the area. Ask anyone for the key cutter with the straw hat. They'll know.
         </p>
       </div>
-
-      <div class="pillar-item">
-        <div class="pillar-num">02 ·</div>
-        <div class="pillar-title">Demonstration Farming</div>
-        <p class="pillar-body">
-          Treated vs. untreated comparison plots visible to neighbouring farmers, with
-          transparent cost and yield data shared at open days.
-        </p>
-      </div>
-
-      <div class="pillar-item">
-        <div class="pillar-num">03 ·</div>
-        <div class="pillar-title">Knowledge Cadence</div>
-        <p class="pillar-body">
-          Monthly advisory bulletins and seasonal workshops using spaced-repetition
-          principles to embed agronomic practice — not just awareness.
-        </p>
-      </div>
-
-      <div class="pillar-item">
-        <div class="pillar-num">04 ·</div>
-        <div class="pillar-title">Feedback Loops</div>
-        <p class="pillar-body">
-          Quarterly review committees with cooperative managers, pest scouts, and
-          buyers — field observations informing research priorities.
-        </p>
-      </div>
-
-      <div class="pillar-item">
-        <div class="pillar-num">05 ·</div>
-        <div class="pillar-title">Premium Markets</div>
-        <p class="pillar-body">
-          Direct relationships with specialty roasters in Germany, the Nordic countries,
-          and the United States — commercial proof embedded in the farm system.
-        </p>
-      </div>
-
     </div>
   </div>
-</section>
+</div>
 
-<!-- FOOTER -->
 <footer>
-  <div class="footer-logo">Kavutiri <span>Farm</span></div>
-  <div class="footer-tagline">Coffee Authority · Land Intelligence · Kirinyaga, Kenya</div>
-  <div class="footer-links">
-    <a href="#about">About</a>
-    <a href="#foliar">Foliar Biogenics</a>
-    <a href="#water">Water & Fish</a>
-    <a href="#thesis">Research</a>
-    <a href="#ndvi">NDVI</a>
-    <a href="#pillars">Pillars</a>
-  </div>
-  <div class="footer-copy">© 2025 Kavutiri Farm. Powered by Chart.js + Leaflet. Open science, open land.</div>
+  <p>&copy; 2025 <span>Key &amp; Son</span> &nbsp;&middot;&nbsp; Kawangware Market, Nairobi, Kenya &nbsp;&middot;&nbsp; Two generations, one craft</p>
 </footer>
 
-<!-- SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.4.0"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-/* ═══════════════════════════════════════════════
-   SCROLL REVEAL
-═══════════════════════════════════════════════ */
-const observer = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible')}});
-},{threshold:0.12});
-document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
-
-/* ═══════════════════════════════════════════════
-   NDVI DASHBOARD
-═══════════════════════════════════════════════ */
-const DEFAULT_JSON = 'data/kavutiri.json';
-let ndviData = [];
-let chart = null;
-let map = null;
-let markers = [];
-
-async function loadJson(path){
-  const res = await fetch(path,{cache:'no-store'});
-  if(!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
-
-function recordsToCsv(records){
-  const header=['date','ndvi','lat','lon'];
-  const rows=records.map(r=>[r.date,r.ndvi,r.lat??'',r.lon??'']);
-  return [header,...rows].map(r=>r.join(',')).join('\n');
-}
-function downloadCsv(filename,content){
-  const blob=new Blob([content],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500);
-}
-
-function updateStats(records){
-  if(!records.length) return document.getElementById('stats').textContent='No data';
-  const vals=records.map(r=>Number(r.ndvi)).filter(v=>!Number.isNaN(v));
-  const min=Math.min(...vals),max=Math.max(...vals);
-  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-  document.getElementById('stats').textContent=
-    `n: ${records.length}  ·  min: ${min.toFixed(3)}  ·  max: ${max.toFixed(3)}  ·  avg: ${avg.toFixed(3)}`;
-}
-
-function buildChart(records){
-  const ctx=document.getElementById('ndviChart').getContext('2d');
-  if(chart){chart.destroy();chart=null;}
-  chart=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:records.map(r=>r.date),
-      datasets:[{
-        label:'NDVI',
-        data:records.map(r=>r.ndvi),
-        borderColor:'#06b6d4',
-        backgroundColor:'rgba(6,182,212,0.12)',
-        fill:true,tension:0.15,pointRadius:3,pointHoverRadius:7
-      }]
-    },
-    options:{
-      interaction:{mode:'nearest',intersect:false},
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{type:'time',time:{unit:'month',tooltipFormat:'yyyy-LL-dd'},
-          ticks:{color:'rgba(148,163,184,0.6)',font:{family:"'DM Mono',monospace",size:10}},
-          grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{min:-0.5,max:1,
-          ticks:{color:'rgba(148,163,184,0.6)',font:{family:"'DM Mono',monospace",size:10}},
-          grid:{color:'rgba(255,255,255,0.04)'}}
-      },
-      onHover(evt,active){if(active&&active.length)highlightMarker(active[0].index);else highlightMarker(-1)},
-      onClick(evt,active){if(active&&active.length)flyToMarker(active[0].index)},
-      maintainAspectRatio:false,
-    }
-  });
-}
-
-function initMap(center=[-0.5,37.9],zoom=11){
-  if(map) return;
-  map=L.map('map',{preferCanvas:true}).setView(center,zoom);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:''}).addTo(map);
-}
-function clearMarkers(){markers.forEach(m=>map.removeLayer(m));markers=[];}
-function buildMarkers(records){
-  clearMarkers();
-  records.forEach((r,idx)=>{
-    if(typeof r.lat!=='number'||typeof r.lon!=='number') return;
-    const m=L.circleMarker([r.lat,r.lon],{radius:4,color:'#06b6d4',fillOpacity:0.8});
-    m.addTo(map);
-    m.on('mouseover',()=>highlightChartPoint(idx));
-    m.on('click',()=>{
-      highlightChartPoint(idx);
-      m.bindPopup(`<b>${r.date}</b><br>NDVI: ${r.ndvi}`).openPopup();
-    });
-    markers.push(m);
-  });
-}
-function highlightMarker(index){
-  markers.forEach((m,i)=>m.setStyle({color:i===index?'#ffffff':'#06b6d4',radius:i===index?8:4}));
-}
-function highlightChartPoint(index){
-  if(!chart) return;
-  if(index<0){chart.setActiveElements([]);chart.update();return;}
-  const di=0;
-  chart.setActiveElements([{datasetIndex:di,index}]);
-  const el=chart.getDatasetMeta(di).data[index];
-  if(el){
-    const rect=chart.canvas.getBoundingClientRect();
-    chart.tooltip.setActiveElements([{datasetIndex:di,index}],{x:el.x+rect.left,y:el.y+rect.top});
-    chart.update();
-  }
-  highlightMarker(index);
-}
-function flyToMarker(index){
-  if(markers[index]) map.flyTo(markers[index].getLatLng(),Math.max(map.getZoom(),14));
-}
-
-async function loadAndRender(path,fromUpload=false){
-  const loader=document.getElementById('ndvi-loader');
-  const dash=document.getElementById('ndvi-dashboard');
-  const err=document.getElementById('ndvi-error');
-  loader.style.display='block';dash.style.display='none';err.style.display='none';
-  try{
-    const payload=fromUpload?path:await loadJson(path);
-    if(!payload||!Array.isArray(payload.records)) throw new Error('JSON missing "records" array');
-    ndviData=payload.records
-      .map(r=>({date:r.date,ndvi:Number(r.ndvi),
-        lat:typeof r.lat==='number'?r.lat:(Number(r.latitude)||null),
-        lon:typeof r.lon==='number'?r.lon:(Number(r.longitude)||null)}))
-      .sort((a,b)=>new Date(a.date)-new Date(b.date));
-    if(!ndviData.length) throw new Error('No NDVI records found');
-    initMap();
-    buildChart(ndviData);
-    buildMarkers(ndviData);
-    updateStats(ndviData);
-    loader.style.display='none';
-    dash.style.display='block';
-  } catch(e){
-    loader.style.display='none';
-    err.style.display='block';
-    err.textContent='NDVI load error: '+e.message+' — upload a JSON file to begin.';
-  }
-}
-
-document.getElementById('upload').addEventListener('change',async e=>{
-  const f=e.target.files[0];if(!f) return;
-  try{
-    const txt=await f.text();
-    loadAndRender(JSON.parse(txt),true);
-  } catch(e){alert('Invalid JSON: '+e.message);}
-});
-
-document.getElementById('downloadCsv').addEventListener('click',()=>{
-  if(!ndviData||!ndviData.length){alert('No NDVI data loaded');return;}
-  downloadCsv('kavutiri-ndvi.csv',recordsToCsv(ndviData));
-});
-
-loadAndRender(DEFAULT_JSON);
-</script>
 </body>
 </html>
